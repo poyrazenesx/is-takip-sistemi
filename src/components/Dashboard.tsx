@@ -49,6 +49,7 @@ export default function Dashboard({ users }: DashboardProps) {
     try {
       if (editingTask) {
         // Güncelleme
+        console.log('Görev güncelleniyor:', editingTask.id, taskForm);
         const response = await fetch('/api/tasks', {
           method: 'PUT',
           headers: {
@@ -60,12 +61,19 @@ export default function Dashboard({ users }: DashboardProps) {
           }),
         });
 
+        console.log('Güncelleme response:', response.status);
         if (response.ok) {
+          console.log('Güncelleme başarılı');
           fetchTasks();
           resetForm();
+        } else {
+          const errorData = await response.text();
+          console.error('Güncelleme hatası:', errorData);
+          alert('Görev güncellenemedi: ' + errorData);
         }
       } else {
         // Yeni görev
+        console.log('Yeni görev oluşturuluyor:', taskForm);
         const response = await fetch('/api/tasks', {
           method: 'POST',
           headers: {
@@ -77,13 +85,21 @@ export default function Dashboard({ users }: DashboardProps) {
           }),
         });
 
+        console.log('POST response status:', response.status);
         if (response.ok) {
+          console.log('Yeni görev başarıyla oluşturuldu');
           fetchTasks();
           resetForm();
+          alert('✅ Görev başarıyla oluşturuldu!');
+        } else {
+          const errorData = await response.text();
+          console.error('POST hatası:', errorData);
+          alert('❌ Görev oluşturulamadı: ' + errorData);
         }
       }
     } catch (error) {
       console.error('Görev kaydet hatası:', error);
+      alert('❌ Bağlantı hatası: ' + error.message);
     }
   };
 
@@ -440,10 +456,26 @@ export default function Dashboard({ users }: DashboardProps) {
               <div className="col-md-6 text-end">
                 <button
                   onClick={() => setShowTaskForm(true)}
-                  className="btn gradient-btn text-white me-3"
+                  className="btn gradient-btn text-white me-2"
                 >
                   <Plus className="me-2" size={18} />
                   Yeni Görev
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/test-db');
+                      const result = await response.json();
+                      console.log('Database Test Result:', result);
+                      alert('Test sonucu konsola yazdırıldı. F12 ile Developer Tools açın.');
+                    } catch (error) {
+                      console.error('Test error:', error);
+                    }
+                  }}
+                  className="btn btn-info text-white me-2"
+                  style={{ background: 'linear-gradient(135deg, #17a2b8 0%, #138496 100%)', border: 'none' }}
+                >
+                  🔍 DB Test
                 </button>
                 <button
                   onClick={logout}

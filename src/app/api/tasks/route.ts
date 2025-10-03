@@ -105,11 +105,15 @@ export async function GET() {
 
 // POST - Yeni görev oluştur
 export async function POST(request: NextRequest) {
+  console.log('🚀 POST /api/tasks çağrıldı');
+  
   try {
     const taskData = await request.json();
+    console.log('📝 Gelen task data:', taskData);
     
     // Gerekli alanları kontrol et
     if (!taskData.title || !taskData.assignedTo || !taskData.createdBy) {
+      console.error('❌ Eksik alanlar:', { title: !!taskData.title, assignedTo: !!taskData.assignedTo, createdBy: !!taskData.createdBy });
       return NextResponse.json(
         { error: 'Başlık, atanan kişi ve oluşturan kişi gerekli' },
         { status: 400 }
@@ -117,30 +121,54 @@ export async function POST(request: NextRequest) {
     }
 
     // Atanan kullanıcının var olduğunu kontrol et
-    const assignedUser = getUserById(taskData.assignedTo);
-    const creatorUser = getUserById(taskData.createdBy);
+    const assignedUser = await getUserById(taskData.assignedTo);
+    const creatorUser = await getUserById(taskData.createdBy);
+    console.log('👥 Kullanıcı kontrolleri:', { assignedUser, creatorUser });
     
     if (!assignedUser || !creatorUser) {
+      console.error('❌ Geçersiz kullanıcı ID\'si');
       return NextResponse.json(
         { error: 'Geçersiz kullanıcı ID\'si' },
         { status: 400 }
       );
     }
 
-    const newTask = createTask({
-      title: taskData.title,
-      description: taskData.description || '',
-      status: taskData.status || 'todo',
-      assignedTo: taskData.assignedTo,
-      createdBy: taskData.createdBy,
-      priority: taskData.priority || 'medium'
-    });
+    console.log('💾 Supabase ile görev oluşturuluyor...');
+    
+    // Önce Supabase ile deneme yapalım
+    try {
+      const supabaseTask = await DatabaseService.createTask({
+        title: taskData.title,
+        description: taskData.description || '',
+        status: taskData.status || 'todo',
+        assigned_to: taskData.assignedTo,
+        created_by: taskData.createdBy,
+        priority: taskData.priority || 'medium'
+      });
+      
+      console.log('✅ Supabase görev oluştu:', supabaseTask);
+      return NextResponse.json(supabaseTask, { status: 201 });
+    } catch (supabaseError) {
+      console.error('❌ Supabase hatası:', supabaseError);
+      
+      // Fallback olarak local storage kullan
+      const newTask = createTask({
+        title: taskData.title,
+        description: taskData.description || '',
+        status: taskData.status || 'todo',
+        assignedTo: taskData.assignedTo,
+        createdBy: taskData.createdBy,
+        priority: taskData.priority || 'medium'
+      });
+      
+      console.log('🔄 Fallback görev oluştu:', newTask);
+      return NextResponse.json(newTask, { status: 201 });
+    }
 
-    return NextResponse.json(newTask, { status: 201 });
   } catch (error) {
-    console.error('Görev oluşturulamadı:', error);
+    console.error('💥 Genel POST hatası:', error);
     return NextResponse.json(
-      { error: 'Görev oluşturulamadı' },
+      { error: 'Görev oluşturulamadı: ' + String(error) },
       { status: 500 }
     );
   }

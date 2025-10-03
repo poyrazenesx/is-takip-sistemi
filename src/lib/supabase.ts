@@ -2,8 +2,20 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+// Anon client (frontend için)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Service client (backend işlemler için - RLS bypass)
+export const supabaseAdmin = supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+  : supabase; // Fallback olarak anon client kullan
 
 // Kullanıcı tablosu için tip tanımları
 export interface DbUser {
@@ -33,7 +45,7 @@ export class DatabaseService {
   
   // Kullanıcı işlemleri
   static async getUsers(): Promise<DbUser[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('users')
       .select('*');
     
@@ -42,7 +54,7 @@ export class DatabaseService {
   }
 
   static async getUserById(id: number): Promise<DbUser | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('id', id)
@@ -53,7 +65,7 @@ export class DatabaseService {
   }
 
   static async getUserByUsername(username: string): Promise<DbUser | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('username', username)
@@ -65,7 +77,7 @@ export class DatabaseService {
 
   // Görev işlemleri
   static async getTasks(): Promise<DbTask[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('tasks')
       .select('*')
       .order('created_at', { ascending: false });
@@ -75,18 +87,31 @@ export class DatabaseService {
   }
 
   static async createTask(task: Omit<DbTask, 'id' | 'created_at' | 'updated_at'>): Promise<DbTask> {
-    const { data, error } = await supabase
+    console.log('🔍 Supabase createTask çağrıldı:', task);
+    console.log('🔑 Using admin client:', !!supabaseServiceKey);
+    
+    const { data, error } = await supabaseAdmin
       .from('tasks')
       .insert([task])
       .select()
       .single();
     
-    if (error) throw error;
+    console.log('📊 Supabase response:', { data, error });
+    
+    if (error) {
+      console.error('❌ Supabase createTask error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
+      throw error;
+    }
     return data;
   }
 
   static async updateTask(id: number, updates: Partial<DbTask>): Promise<DbTask> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('tasks')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
