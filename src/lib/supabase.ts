@@ -100,10 +100,10 @@ export class DatabaseService {
     
     if (error) {
       console.error('❌ Supabase createTask error:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
+        message: error?.message || String(error),
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code
       });
       throw error;
     }
@@ -134,10 +134,10 @@ export class DatabaseService {
     
     if (error) {
       console.error('❌ Supabase deleteTask error:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
+        message: error?.message || String(error),
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code
       });
     }
     

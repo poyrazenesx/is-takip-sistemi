@@ -15,7 +15,7 @@ export async function GET() {
       console.error('Supabase bağlantı hatası:', error);
       return NextResponse.json({
         success: false,
-        error: 'Veritabanı bağlantı hatası: ' + error.message,
+        error: 'Veritabanı bağlantı hatası: ' + (error instanceof Error ? error.message : String(error)),
         details: error
       }, { status: 500 });
     }
@@ -32,7 +32,7 @@ export async function GET() {
       console.error('Kullanıcılar sorgu hatası:', usersError);
       return NextResponse.json({
         success: false,
-        error: 'Kullanıcılar sorgulanamadı: ' + usersError.message
+        error: 'Kullanıcılar sorgulanamadı: ' + (usersError?.message || String(usersError))
       }, { status: 500 });
     }
 
