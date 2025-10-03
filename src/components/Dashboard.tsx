@@ -99,7 +99,8 @@ export default function Dashboard({ users }: DashboardProps) {
       }
     } catch (error) {
       console.error('Görev kaydet hatası:', error);
-      alert('❌ Bağlantı hatası: ' + error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert('❌ Bağlantı hatası: ' + errorMessage);
     }
   };
 
