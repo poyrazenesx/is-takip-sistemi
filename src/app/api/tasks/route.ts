@@ -176,30 +176,48 @@ export async function POST(request: NextRequest) {
 
 // PUT - Görev güncelle
 export async function PUT(request: NextRequest) {
+  console.log('🔄 PUT /api/tasks çağrıldı');
+  
   try {
     const { id, ...updateData } = await request.json();
+    console.log('📝 Güncelleme data:', { id, updateData });
     
     if (!id) {
+      console.error('❌ Görev ID eksik');
       return NextResponse.json(
         { error: 'Görev ID\'si gerekli' },
         { status: 400 }
       );
     }
 
-    const updatedTask = updateTask(id, updateData);
+    console.log('💾 Supabase ile görev güncelleniyor...');
     
-    if (!updatedTask) {
-      return NextResponse.json(
-        { error: 'Görev bulunamadı' },
-        { status: 404 }
-      );
-    }
+    // Önce Supabase ile deneme yapalım
+    try {
+      const supabaseTask = await DatabaseService.updateTask(id, updateData);
+      console.log('✅ Supabase görev güncellendi:', supabaseTask);
+      return NextResponse.json(supabaseTask);
+    } catch (supabaseError) {
+      console.error('❌ Supabase güncelleme hatası:', supabaseError);
+      
+      // Fallback olarak local storage kullan
+      const updatedTask = updateTask(id, updateData);
+      
+      if (!updatedTask) {
+        console.error('❌ Local fallback da başarısız');
+        return NextResponse.json(
+          { error: 'Görev bulunamadı' },
+          { status: 404 }
+        );
+      }
 
-    return NextResponse.json(updatedTask);
+      console.log('🔄 Fallback görev güncellendi:', updatedTask);
+      return NextResponse.json(updatedTask);
+    }
   } catch (error) {
-    console.error('Görev güncellenemedi:', error);
+    console.error('💥 Genel PUT hatası:', error);
     return NextResponse.json(
-      { error: 'Görev güncellenemedi' },
+      { error: 'Görev güncellenemedi: ' + String(error) },
       { status: 500 }
     );
   }
@@ -207,31 +225,50 @@ export async function PUT(request: NextRequest) {
 
 // DELETE - Görev sil
 export async function DELETE(request: NextRequest) {
+  console.log('🗑️ DELETE /api/tasks çağrıldı');
+  
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    console.log('📝 Silinecek görev ID:', id);
     
     if (!id) {
+      console.error('❌ Görev ID eksik');
       return NextResponse.json(
         { error: 'Görev ID\'si gerekli' },
         { status: 400 }
       );
     }
 
-    const deleted = deleteTask(parseInt(id));
+    const taskId = parseInt(id);
+    console.log('💾 Supabase ile görev siliniyor...');
     
-    if (!deleted) {
-      return NextResponse.json(
-        { error: 'Görev bulunamadı' },
-        { status: 404 }
-      );
-    }
+    // Önce Supabase ile deneme yapalım
+    try {
+      const deleted = await DatabaseService.deleteTask(taskId);
+      console.log('✅ Supabase görev silindi:', deleted);
+      return NextResponse.json({ success: true, message: 'Görev silindi' });
+    } catch (supabaseError) {
+      console.error('❌ Supabase silme hatası:', supabaseError);
+      
+      // Fallback olarak local storage kullan
+      const deleted = deleteTask(taskId);
+      
+      if (!deleted) {
+        console.error('❌ Local fallback da başarısız');
+        return NextResponse.json(
+          { error: 'Görev bulunamadı' },
+          { status: 404 }
+        );
+      }
 
-    return NextResponse.json({ success: true, message: 'Görev silindi' });
+      console.log('🔄 Fallback görev silindi');
+      return NextResponse.json({ success: true, message: 'Görev silindi' });
+    }
   } catch (error) {
-    console.error('Görev silinemedi:', error);
+    console.error('💥 Genel DELETE hatası:', error);
     return NextResponse.json(
-      { error: 'Görev silinemedi' },
+      { error: 'Görev silinemedi: ' + String(error) },
       { status: 500 }
     );
   }

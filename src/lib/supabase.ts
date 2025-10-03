@@ -123,10 +123,23 @@ export class DatabaseService {
   }
 
   static async deleteTask(id: number): Promise<boolean> {
-    const { error } = await supabase
+    console.log('🔍 Supabase deleteTask çağrıldı:', id);
+    
+    const { error } = await supabaseAdmin
       .from('tasks')
       .delete()
       .eq('id', id);
+    
+    console.log('📊 Supabase delete response:', { error });
+    
+    if (error) {
+      console.error('❌ Supabase deleteTask error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
+    }
     
     return !error;
   }
