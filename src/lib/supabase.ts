@@ -205,3 +205,6 @@ export class DatabaseService {
     }
   }
 }
+
+
+// Vercel Dashboard → is-takip-sistemi → Settings → Advanced → Delete Project
