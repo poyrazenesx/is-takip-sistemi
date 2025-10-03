@@ -26,11 +26,17 @@ let tasks: any[] = [
 
 // Yardımcı fonksiyonlar
 async function getUserById(id: number) {
+  console.log('🔍 getUserById çağrıldı:', id, typeof id);
+  
   try {
     const user = await DatabaseService.getUserById(id);
+    console.log('✅ Supabase kullanıcı bulundu:', user);
     return user;
-  } catch {
-    return localUsers.find(user => user.id === id);
+  } catch (dbError) {
+    console.error('❌ Supabase kullanıcı hatası:', dbError);
+    const localUser = localUsers.find(user => user.id === id);
+    console.log('🔄 Local fallback kullanıcı:', localUser);
+    return localUser;
   }
 }
 
@@ -103,17 +109,37 @@ export async function POST(request: NextRequest) {
     console.log('📝 Gelen task data:', taskData);
     
     // Gerekli alanları kontrol et
-    if (!taskData.title || !taskData.assignedTo || !taskData.createdBy) {
-      console.error('❌ Eksik alanlar:', { title: !!taskData.title, assignedTo: !!taskData.assignedTo, createdBy: !!taskData.createdBy });
+    if (!taskData.title) {
+      console.error('❌ Başlık eksik');
       return NextResponse.json(
-        { error: 'Başlık, atanan kişi ve oluşturan kişi gerekli' },
+        { error: 'Başlık gerekli' },
         { status: 400 }
       );
     }
 
+    // AssignedTo ve createdBy için varsayılan değerler
+    if (!taskData.assignedTo) {
+      taskData.assignedTo = 1; // Varsayılan kullanıcı
+      console.log('⚠️  AssignedTo eksik, varsayılan kullanıcı (1) atandı');
+    }
+
+    if (!taskData.createdBy) {
+      taskData.createdBy = 1; // Varsayılan kullanıcı
+      console.log('⚠️  CreatedBy eksik, varsayılan kullanıcı (1) atandı');
+    }
+
+    // Kullanıcı ID'lerini number'a çevir
+    const assignedToId = typeof taskData.assignedTo === 'string' ? parseInt(taskData.assignedTo) : taskData.assignedTo;
+    const createdById = typeof taskData.createdBy === 'string' ? parseInt(taskData.createdBy) : taskData.createdBy;
+    
+    console.log('🔢 ID dönüşümleri:', { 
+      original: { assignedTo: taskData.assignedTo, createdBy: taskData.createdBy },
+      converted: { assignedToId, createdById }
+    });
+    
     // Atanan kullanıcının var olduğunu kontrol et
-    const assignedUser = await getUserById(taskData.assignedTo);
-    const creatorUser = await getUserById(taskData.createdBy);
+    const assignedUser = await getUserById(assignedToId);
+    const creatorUser = await getUserById(createdById);
     console.log('👥 Kullanıcı kontrolleri:', { assignedUser, creatorUser });
     
     if (!assignedUser || !creatorUser) {
@@ -132,8 +158,8 @@ export async function POST(request: NextRequest) {
         title: taskData.title,
         description: taskData.description || '',
         status: taskData.status || 'todo',
-        assigned_to: taskData.assignedTo,
-        created_by: taskData.createdBy,
+        assigned_to: assignedToId,
+        created_by: createdById,
         priority: taskData.priority || 'medium'
       });
       
@@ -147,8 +173,8 @@ export async function POST(request: NextRequest) {
         title: taskData.title,
         description: taskData.description || '',
         status: taskData.status || 'todo',
-        assignedTo: taskData.assignedTo,
-        createdBy: taskData.createdBy,
+        assignedTo: assignedToId,
+        createdBy: createdById,
         priority: taskData.priority || 'medium'
       });
       

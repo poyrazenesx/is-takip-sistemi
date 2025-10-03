@@ -74,6 +74,8 @@ export default function Dashboard({ users }: DashboardProps) {
       } else {
         // Yeni görev
         console.log('Yeni görev oluşturuluyor:', taskForm);
+        console.log('Current user:', user);
+        console.log('User ID:', user?.id, typeof user?.id);
         const response = await fetch('/api/tasks', {
           method: 'POST',
           headers: {
@@ -81,7 +83,7 @@ export default function Dashboard({ users }: DashboardProps) {
           },
           body: JSON.stringify({
             ...taskForm,
-            createdBy: user?.id
+            createdBy: user?.id || 1 // fallback için 1 kullan
           }),
         });
 
