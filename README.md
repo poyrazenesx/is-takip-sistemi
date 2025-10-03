@@ -4,6 +4,24 @@ Modern ve kullanıcı dostu bir ekip iş takip uygulaması. Tavşanlı Doç.Dr.M
 
 🌐 **Live Demo:** https://is-takip-sistemi.vercel.app
 
+## 🚀 Hızlı Kurulum
+
+### Supabase Database Kurulumu
+1. [Supabase Dashboard](https://supabase.com/dashboard)'a gidin
+2. SQL Editor'da `supabase_setup.sql` dosyasındaki sorguları çalıştırın
+3. Service Role Key'ini kopyalayın ve environment variables'a ekleyin
+
+### Vercel Environment Variables
+```
+NEXT_PUBLIC_SUPABASE_URL=https://deyylwvaulpggmjjhuzj.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[Supabase anon key]
+SUPABASE_SERVICE_ROLE_KEY=[Supabase service role key]
+```
+
+## 🔐 Giriş Bilgileri
+- **Admin:** `epoyraz` / `epoyraz43`
+- **Kullanıcılar:** `ismail/123`, `köroğlu/123`, `serkan/123`
+
 ## Özellikler
 
 - 🔐 **Güvenli Giriş Sistemi** - Kullanıcı adı ve şifre ile giriş
