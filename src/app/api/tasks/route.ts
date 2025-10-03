@@ -9,6 +9,21 @@ const localUsers = [
   { id: 4, name: 'Serkan Özil', role: 'Member' }
 ];
 
+// Fallback local tasks
+let tasks: any[] = [
+  {
+    id: 1,
+    title: 'Örnek Görev 1',
+    description: 'Bu bir örnek görevdir',
+    status: 'todo',
+    assignedTo: 1,
+    createdBy: 1,
+    priority: 'medium',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+];
+
 // Yardımcı fonksiyonlar
 async function getUserById(id: number) {
   try {
@@ -54,31 +69,7 @@ function deleteTask(id: number) {
   return true;
 }
 
-// Basit task listesi
-let tasks = [
-  {
-    id: 1,
-    title: 'Proje Planı Hazırla',
-    description: 'Yeni proje için detaylı plan hazırlanması',
-    status: 'in-progress',
-    assignedTo: 1,
-    createdBy: 1,
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-20'),
-    priority: 'high'
-  },
-  {
-    id: 2,
-    title: 'Müşteri Toplantısı',
-    description: 'ABC Şirketi ile ürün tanıtım toplantısı',
-    status: 'todo',
-    assignedTo: 2,
-    createdBy: 1,
-    createdAt: new Date('2024-01-18'),
-    updatedAt: new Date('2024-01-18'),
-    priority: 'medium'
-  }
-];
+// Fallback tasks array üstte tanımlı
 
 // GET - Tüm görevleri getir
 export async function GET() {
