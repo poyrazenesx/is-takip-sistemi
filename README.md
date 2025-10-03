@@ -1,6 +1,8 @@
 # İş Takip Sistemi
 
-Modern ve kullanıcı dostu bir ekip iş takip uygulaması. 3 kişilik ekipler için kullanıcı girişi, görev yönetimi ve işbirliği özellikleri sunar.
+Modern ve kullanıcı dostu bir ekip iş takip uygulaması. Tavşanlı Doç.Dr.Mustafa KALEMLİ Devlet Hastanesi - BİLGİ İŞLEM BİRİMİ için geliştirilmiş olan bu uygulama, 3 kişilik ekipler için kullanıcı girişi, görev yönetimi ve işbirliği özellikleri sunar.
+
+🌐 **Live Demo:** https://is-takip-sistemi.vercel.app
 
 ## Özellikler
 
