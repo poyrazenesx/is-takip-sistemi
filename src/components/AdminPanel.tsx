@@ -2,31 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { DatabaseService } from '@/lib/supabase';
+import { DatabaseService, type DbUser } from '@/lib/supabase';
 import { Users, Settings, Database, UserPlus, Trash2, Edit3 } from 'lucide-react';
 
 export default function AdminPanel() {
   const { user } = useAuth();
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<DbUser[]>([]);
   const [showAddUser, setShowAddUser] = useState(false);
   const [newUser, setNewUser] = useState({
     username: '',
     password: '',
     name: '',
-    role: 'member'
+    role: 'member' as 'admin' | 'member'
   });
-
-  // Admin değilse erişim engelle
-  if (user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-content-center">
-        <div className="text-center text-white">
-          <h1 className="text-4xl font-bold mb-4">🚫 Erişim Engellendi</h1>
-          <p className="text-xl">Bu sayfaya sadece Admin kullanıcıları erişebilir.</p>
-        </div>
-      </div>
-    );
-  }
 
   const fetchUsers = async () => {
     try {
@@ -37,7 +25,7 @@ export default function AdminPanel() {
     }
   };
 
-  const handleAddUser = async (e) => {
+  const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       // Yeni kullanıcı ekleme API'si çağrılacak
@@ -60,6 +48,18 @@ export default function AdminPanel() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  // Admin kontrolü
+  if (user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
+        <div className="text-center text-white">
+          <h1 className="text-4xl font-bold mb-4">🚫 Erişim Engellendi</h1>
+          <p className="text-xl">Bu sayfaya sadece Admin kullanıcıları erişebilir.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -167,7 +167,7 @@ export default function AdminPanel() {
                           </span>
                         </td>
                         <td className="py-3 text-sm text-white/70">
-                          {new Date(dbUser.created_at).toLocaleDateString('tr-TR')}
+                          {dbUser.created_at && new Date(dbUser.created_at).toLocaleDateString('tr-TR')}
                         </td>
                         <td className="py-3">
                           <div className="flex gap-2">
@@ -238,7 +238,7 @@ export default function AdminPanel() {
                   </label>
                   <select
                     value={newUser.role}
-                    onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                    onChange={(e) => setNewUser({...newUser, role: e.target.value as 'admin' | 'member'})}
                     className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white"
                   >
                     <option value="member">Member</option>
