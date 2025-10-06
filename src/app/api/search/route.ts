@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/supabase';
 
+// Vercel dynamic server için gerekli config
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = request.nextUrl;
-    const query = searchParams.get('q');
-    const type = searchParams.get('type'); // 'notes', 'tasks', 'all'
-    const limit = parseInt(searchParams.get('limit') || '20');
+    // Vercel static generation için URL parsing
+    const url = new URL(request.url);
+    const query = url.searchParams.get('q');
+    const type = url.searchParams.get('type'); // 'notes', 'tasks', 'all'
+    const limit = parseInt(url.searchParams.get('limit') || '20');
 
     if (!query || query.trim().length < 2) {
       return NextResponse.json(

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/supabase';
 
+// Vercel dynamic server için gerekli config
+export const dynamic = 'force-dynamic';
+
 // Fallback local users
 const localUsers = [
   { id: 1, name: 'Enes Poyraz', role: 'Admin' },

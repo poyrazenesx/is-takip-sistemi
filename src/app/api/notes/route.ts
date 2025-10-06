@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/supabase';
 
+// Vercel dynamic server için gerekli config
+export const dynamic = 'force-dynamic';
+
 // Note kategorileri
 const NOTE_CATEGORIES = [
   { id: 'servis', name: 'Servis', icon: '🏥' },
@@ -43,8 +46,9 @@ export async function GET(request: NextRequest) {
   try {
     console.log('Notes GET API çağrıldı');
     
-    const { searchParams } = request.nextUrl;
-    const category = searchParams.get('category');
+    // Vercel static generation için URL parsing
+    const url = new URL(request.url);
+    const category = url.searchParams.get('category');
     
     try {
       const notes = await DatabaseService.getNotes(category);
@@ -287,8 +291,9 @@ export async function DELETE(request: NextRequest) {
   console.log('🗑️ DELETE /api/notes çağrıldı');
   
   try {
-    const { searchParams } = request.nextUrl;
-    const id = searchParams.get('id');
+    // Vercel static generation için URL parsing
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
     
     if (!id) {
       return NextResponse.json(
