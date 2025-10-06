@@ -492,39 +492,64 @@ const Notes = ({ searchTerm = '' }: NotesProps) => {
                             >
                               <div className="d-flex justify-content-between align-items-start mb-2">
                                 <h6 className="note-title">{highlightText(note.title, searchTerm)}</h6>
-                                <div className="dropdown">
+                                <div className="d-flex gap-1">
                                   <button
-                                    className="action-btn dropdown-toggle"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    onClick={(e) => e.stopPropagation()}
+                                    className="btn btn-sm btn-outline-primary"
+                                    title="Düzenle"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditNote(note);
+                                    }}
                                   >
-                                    <i className="bi bi-three-dots-vertical"></i>
+                                    ✏️
                                   </button>
-                                  <ul className="dropdown-menu shadow-sm">
-                                    <li>
-                                      <button
-                                        className="dropdown-item"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleEditNote(note);
-                                        }}
-                                      >
-                                        <i className="bi bi-pencil me-2"></i>Düzenle
-                                      </button>
-                                    </li>
-                                    <li>
-                                      <button
-                                        className="dropdown-item text-danger"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDeleteNote(note.id);
-                                        }}
-                                      >
-                                        <i className="bi bi-trash me-2"></i>Sil
-                                      </button>
-                                    </li>
-                                  </ul>
+                                  <button
+                                    className="btn btn-sm btn-outline-danger"
+                                    title="Sil"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (window.confirm('Bu notu silmek istediğinizden emin misiniz?')) {
+                                        handleDeleteNote(note.id);
+                                      }
+                                    }}
+                                  >
+                                    🗑️
+                                  </button>
+                                  <div className="dropdown">
+                                    <button
+                                      className="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                      type="button"
+                                      data-bs-toggle="dropdown"
+                                      onClick={(e) => e.stopPropagation()}
+                                      title="Daha fazla seçenek"
+                                    >
+                                      ⋮
+                                    </button>
+                                    <ul className="dropdown-menu shadow-sm">
+                                      <li>
+                                        <button
+                                          className="dropdown-item"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditNote(note);
+                                          }}
+                                        >
+                                          <i className="bi bi-pencil me-2"></i>Düzenle
+                                        </button>
+                                      </li>
+                                      <li>
+                                        <button
+                                          className="dropdown-item text-danger"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteNote(note.id);
+                                          }}
+                                        >
+                                          <i className="bi bi-trash me-2"></i>Sil
+                                        </button>
+                                      </li>
+                                    </ul>
+                                  </div>
                                 </div>
                               </div>
                               
