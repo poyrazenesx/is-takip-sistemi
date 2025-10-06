@@ -3,9 +3,7 @@ import { DatabaseService } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('🔍 Search API çağrıldı');
-    
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = request.nextUrl;
     const query = searchParams.get('q');
     const type = searchParams.get('type'); // 'notes', 'tasks', 'all'
     const limit = parseInt(searchParams.get('limit') || '20');
