@@ -385,11 +385,12 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
             <h3 className="fw-bold mb-3">🔍 Evrensel Arama</h3>
             
             <form onSubmit={handleSearch}>
+              {/* eslint-disable-next-line react/no-unescaped-entities */}
               <input
                 ref={searchInputRef}
                 type="text"
                 className="search-input"
-                placeholder="Notlarda ve görevlerde ara... (örn: 'has' yazarak 'hastane' kelimesini bulun)"
+                placeholder="Notlarda ve görevlerde ara... (örn: &apos;has&apos; yazarak &apos;hastane&apos; kelimesini bulun)"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyPress={handleKeyPress}
@@ -435,7 +436,8 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
               <div className="empty-state">
                 <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🔍</div>
                 <h5>Sonuç bulunamadı</h5>
-                <p>"{searchTerm}" için herhangi bir sonuç bulunamadı</p>
+                {/* eslint-disable-next-line react/no-unescaped-entities */}
+                <p>&quot;{searchTerm}&quot; için herhangi bir sonuç bulunamadı</p>
                 <small className="text-muted">
                   • En az 2 karakter girin<br />
                   • Farklı kelimeler deneyin<br />

@@ -587,7 +587,8 @@ export default function Dashboard({ users }: DashboardProps) {
                 {searchTerm && (
                   <div className="mt-2">
                     <small className="text-muted">
-                      🔍 Aranıyor: "<strong>{searchTerm}</strong>" 
+                      {/* eslint-disable-next-line react/no-unescaped-entities */}
+                      🔍 Aranıyor: &quot;<strong>{searchTerm}</strong>&quot; 
                       {activeTab === 'tasks' ? ' (Görevlerde)' : activeTab === 'notes' ? ' (Notlarda)' : ''}
                     </small>
                   </div>
