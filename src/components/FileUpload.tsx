@@ -24,6 +24,7 @@ const FileUpload = ({
   const [dragActive, setDragActive] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
   const [uploadedFiles, setUploadedFiles] = useState<Attachment[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string>('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -113,9 +114,11 @@ const FileUpload = ({
     setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFiles(e.dataTransfer.files);
+      const filesArray = Array.from(e.dataTransfer.files).slice(0, maxFiles);
+      setSelectedFiles(filesArray);
+      setError('');
     }
-  }, [handleFiles]);
+  }, [maxFiles]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -131,13 +134,98 @@ const FileUpload = ({
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      handleFiles(e.target.files);
+      const filesArray = Array.from(e.target.files).slice(0, maxFiles);
+      setSelectedFiles(filesArray);
+      setError('');
     }
-  }, [handleFiles]);
+  }, [maxFiles]);
 
   const openFileDialog = () => {
     fileInputRef.current?.click();
   };
+
+
+
+  const uploadSelectedFiles = useCallback(async () => {
+    if (!selectedFiles.length) return [];
+    
+    setError('');
+    setUploading(true);
+    onUploadStart?.();
+
+    const newAttachments: Attachment[] = [];
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      const progressKey = file.name + Date.now();
+
+      try {
+        // Dosya boyut kontrolü
+        if (file.size > 10 * 1024 * 1024) {
+          setError(`${file.name}: Dosya boyutu 10MB'dan büyük olamaz`);
+          continue;
+        }
+
+        setUploadProgress(prev => ({ ...prev, [progressKey]: 0 }));
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('uploadedBy', user?.id?.toString() || '1');
+        formData.append('description', '');
+
+        // Simulated progress
+        const progressInterval = setInterval(() => {
+          setUploadProgress(prev => ({
+            ...prev,
+            [progressKey]: Math.min((prev[progressKey] || 0) + 10, 90)
+          }));
+        }, 100);
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        clearInterval(progressInterval);
+
+        if (response.ok) {
+          const result = await response.json();
+          setUploadProgress(prev => ({ ...prev, [progressKey]: 100 }));
+          newAttachments.push(result.attachment);
+          
+          // Progress'i temizle
+          setTimeout(() => {
+            setUploadProgress(prev => {
+              const updated = { ...prev };
+              delete updated[progressKey];
+              return updated;
+            });
+          }, 1000);
+        } else {
+          const errorData = await response.json();
+          setError(`${file.name}: ${errorData.error}`);
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        setError(`${file.name}: Yükleme hatası`);
+        setUploadProgress(prev => {
+          const updated = { ...prev };
+          delete updated[progressKey];
+          return updated;
+        });
+      }
+    }
+
+    setUploadedFiles(prev => [...prev, ...newAttachments]);
+    setUploading(false);
+    
+    if (newAttachments.length > 0) {
+      onUploadComplete?.(newAttachments);
+      setSelectedFiles([]); // Seçili dosyaları temizle
+    }
+    
+    return newAttachments;
+  }, [selectedFiles, maxFiles, user?.id, onUploadComplete, onUploadStart]);
 
   const removeFile = (index: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
@@ -367,6 +455,58 @@ const FileUpload = ({
             </div>
           </div>
         ))}
+
+        {/* Selected Files Preview */}
+        {selectedFiles.length > 0 && (
+          <div className="mt-4">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h6 className="fw-bold text-dark mb-0">📋 Seçilen Dosyalar ({selectedFiles.length})</h6>
+              <button 
+                className="btn btn-primary btn-sm"
+                onClick={uploadSelectedFiles}
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" />
+                    Yükleniyor...
+                  </>
+                ) : (
+                  '📤 Dosyaları Yükle'
+                )}
+              </button>
+            </div>
+            <div className="row g-2">
+              {selectedFiles.map((file, index) => (
+                <div key={index} className="col-12">
+                  <div className="file-preview p-2">
+                    <div className="d-flex align-items-center">
+                      <div className="file-icon me-3">
+                        {file.type.startsWith('image/') ? '🖼️' : '📄'}
+                      </div>
+                      <div className="flex-grow-1">
+                        <div className="fw-semibold text-dark">{file.name}</div>
+                        <small className="text-muted">
+                          📊 {formatFileSize(file.size)} • {file.type}
+                        </small>
+                      </div>
+                      <button
+                        className="remove-btn ms-3"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+                        }}
+                        title="Dosyayı kaldır"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Error Message */}
         {error && (

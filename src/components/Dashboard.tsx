@@ -18,6 +18,7 @@ export default function Dashboard({ users }: DashboardProps) {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [activeTab, setActiveTab] = useState<'tasks' | 'notes'>('tasks');
   const [searchTerm, setSearchTerm] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
 
   // Form verileri
   const [taskForm, setTaskForm] = useState({
@@ -244,7 +245,12 @@ export default function Dashboard({ users }: DashboardProps) {
       <style jsx>{`
         .dashboard-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+          transition: all 0.5s ease;
+        }
+        
+        .dashboard-container.dark-theme {
+          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         }
         
         .glass-card {
@@ -262,7 +268,7 @@ export default function Dashboard({ users }: DashboardProps) {
         }
         
         .gradient-btn {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
           border: none;
           border-radius: 15px;
           padding: 12px 25px;
@@ -272,7 +278,7 @@ export default function Dashboard({ users }: DashboardProps) {
         
         .gradient-btn:hover {
           transform: translateY(-2px);
-          box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+          box-shadow: 0 10px 30px rgba(30, 58, 95, 0.4);
         }
         
         .logout-btn {
@@ -462,7 +468,7 @@ export default function Dashboard({ users }: DashboardProps) {
 
       `}</style>
       
-      <div className="dashboard-container">
+      <div className={`dashboard-container ${darkMode ? 'dark-theme' : ''}`}>
         {/* Header */}
         <header className="header-card">
           <div className="container">
@@ -476,6 +482,13 @@ export default function Dashboard({ users }: DashboardProps) {
               </div>
               <div className="col-md-6 text-end">
 
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className="btn btn-outline-secondary me-2"
+                  title={darkMode ? 'Açık tema' : 'Koyu tema'}
+                >
+                  {darkMode ? '☀️' : '🌙'}
+                </button>
                 <button
                   onClick={() => setShowTaskForm(true)}
                   className="btn gradient-btn text-white me-2"

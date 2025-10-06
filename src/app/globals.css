@@ -14,11 +14,31 @@ body {
   line-height: 1.6;
 }
 
+/* Dark Theme Variables */
+:root {
+  --primary-gradient: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+  --dark-primary-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --primary-color: #1e3a5f;
+  --primary-light: #2c5282;
+  --dark-bg: #0f172a;
+  --dark-surface: #1e293b;
+  --dark-card: #334155;
+  --dark-text: #f1f5f9;
+  --dark-text-secondary: #cbd5e1;
+  --dark-border: #475569;
+}
+
 /* Bootstrap geçersiz kılmaları ve özel stiller */
 .btn {
   border-radius: 12px !important;
   font-weight: 500;
   transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: var(--primary-gradient) !important;
+  border: none !important;
+  color: white !important;
 }
 
 .form-control {
@@ -28,14 +48,66 @@ body {
 }
 
 .form-control:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(30, 58, 95, 0.25);
 }
 
 .card {
   border: none;
   border-radius: 20px !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark Theme Styles */
+.dark-theme {
+  background: var(--dark-bg) !important;
+  color: var(--dark-text) !important;
+  min-height: 100vh;
+}
+
+.dark-theme .card {
+  background: var(--dark-card) !important;
+  color: var(--dark-text) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .form-control {
+  background: var(--dark-surface) !important;
+  border-color: var(--dark-border) !important;
+  color: var(--dark-text) !important;
+}
+
+.dark-theme .form-control::placeholder {
+  color: var(--dark-text-secondary) !important;
+}
+
+.dark-theme .form-control:focus {
+  background: var(--dark-surface) !important;
+  border-color: #3b82f6 !important;
+  color: var(--dark-text) !important;
+  box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+}
+
+.dark-theme .modal-content {
+  background: var(--dark-card) !important;
+  color: var(--dark-text) !important;
+}
+
+.dark-theme .modal-header {
+  background: var(--dark-primary-gradient) !important;
+  border-bottom: 1px solid var(--dark-border) !important;
+}
+
+.dark-theme .bg-light {
+  background: var(--dark-surface) !important;
+}
+
+.dark-theme .text-muted {
+  color: var(--dark-text-secondary) !important;
+}
+
+.dark-theme .border {
+  border-color: var(--dark-border) !important;
 }
 
 /* Özel animasyonlar */
@@ -88,7 +160,11 @@ body {
 }
 
 .gradient-bg {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
+}
+
+.dark-theme .gradient-bg {
+  background: var(--dark-primary-gradient);
 }
 
 /* Responsive */
