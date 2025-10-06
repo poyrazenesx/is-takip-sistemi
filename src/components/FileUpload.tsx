@@ -355,20 +355,34 @@ const FileUpload = ({
             Dosyalarınızı buraya sürükleyip bırakın veya
           </p>
           
-          <button 
-            className="upload-btn"
-            onClick={openFileDialog}
-            disabled={uploading}
-          >
-            {uploading ? (
+          <div className="d-flex gap-2 justify-content-center mb-3">
+            <button 
+              type="button"
+              className="btn btn-outline-primary"
+              onClick={openFileDialog}
+              disabled={uploading}
+            >
+              🔍 Dosya Seç
+            </button>
+          </div>
+          
+          {selectedFiles.length > 0 && (
+            <button 
+              type="button"
+              className="upload-btn"
+              onClick={uploadSelectedFiles}
+              disabled={uploading}
+            >
+              {uploading ? (
               <>
                 <span className="spinner-border spinner-border-sm me-2" />
                 Yükleniyor...
               </>
             ) : (
-              '🔍 Dosya Seç'
+              '� Dosyaları Yükle'
             )}
-          </button>
+            </button>
+          )}
           
           <div className="mt-3">
             <small className="text-muted">
@@ -437,6 +451,7 @@ const FileUpload = ({
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h6 className="fw-bold text-dark mb-0">📋 Seçilen Dosyalar ({selectedFiles.length})</h6>
               <button 
+                type="button"
                 className="btn btn-primary btn-sm"
                 onClick={uploadSelectedFiles}
                 disabled={uploading}
@@ -466,6 +481,7 @@ const FileUpload = ({
                         </small>
                       </div>
                       <button
+                        type="button"
                         className="remove-btn ms-3"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -527,6 +543,7 @@ const FileUpload = ({
                       </div>
                       
                       <button
+                        type="button"
                         className="remove-btn ms-3"
                         onClick={(e) => {
                           e.stopPropagation();

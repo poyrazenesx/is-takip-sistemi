@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
   try {
     console.log('Notes GET API çağrıldı');
     
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = request.nextUrl;
     const category = searchParams.get('category');
     
     try {
@@ -252,7 +252,7 @@ export async function DELETE(request: NextRequest) {
   console.log('🗑️ DELETE /api/notes çağrıldı');
   
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = request.nextUrl;
     const id = searchParams.get('id');
     
     if (!id) {
