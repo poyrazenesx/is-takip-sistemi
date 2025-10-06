@@ -89,15 +89,13 @@ export async function GET(request: NextRequest) {
 
 // POST - Yeni not oluştur
 export async function POST(request: NextRequest) {
-  console.log('🚀 POST /api/notes çağrıldı');
-  
+  console.log('🚨 POST /api/notes ÇAĞRILDI - OTOMATIK Mİ?');
   try {
     const noteData = await request.json();
     console.log('📝 Gelen note data:', noteData);
     
     // Gerekli alanları kontrol et
     if (!noteData.title || !noteData.content || !noteData.category) {
-      console.error('❌ Eksik alanlar');
       return NextResponse.json(
         { error: 'Başlık, içerik ve kategori gerekli' },
         { status: 400 }
@@ -179,11 +177,8 @@ export async function POST(request: NextRequest) {
 
 // PUT - Not güncelle
 export async function PUT(request: NextRequest) {
-  console.log('🔄 PUT /api/notes çağrıldı');
-  
   try {
     const { id, updatedBy, ...updateData } = await request.json();
-    console.log('📝 Güncelleme data:', { id, updateData });
     
     if (!id) {
       return NextResponse.json(
@@ -193,10 +188,8 @@ export async function PUT(request: NextRequest) {
     }
 
     const noteId = typeof id === 'string' ? parseInt(id) : id;
-    console.log('🔢 ID dönüşümü:', { original: id, converted: noteId, type: typeof id });
     
     if (isNaN(noteId) || noteId <= 0) {
-      console.error('❌ Geçersiz ID:', { id, noteId });
       return NextResponse.json(
         { error: `Geçersiz not ID'si: ${id}` },
         { status: 400 }
@@ -208,7 +201,6 @@ export async function PUT(request: NextRequest) {
         ...updateData,
         updated_by: updatedBy || 1
       });
-      console.log('✅ Supabase not güncellendi:', supabaseNote);
       
       // Response'u da process et
       const processedNote = {
@@ -222,7 +214,6 @@ export async function PUT(request: NextRequest) {
       
       return NextResponse.json(processedNote);
     } catch (supabaseError) {
-      console.error('❌ Supabase güncelleme hatası:', supabaseError);
       
       // Fallback
       const noteIndex = localNotes.findIndex(note => note.id === noteId);
