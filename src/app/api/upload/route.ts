@@ -24,11 +24,11 @@ export async function POST(request: NextRequest) {
       type: file.type
     });
 
-    // Dosya boyut kontrolü (2MB limit - Vercel + Base64 için küçültüldü)
-    const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+    // Dosya boyut kontrolü (10MB limit - Supabase Storage ile)
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { error: 'Dosya boyutu 2MB\'dan büyük olamaz (Vercel + Base64 sınırı)' },
+        { error: 'Dosya boyutu 10MB\'dan büyük olamaz' },
         { status: 400 }
       );
     }
@@ -40,69 +40,91 @@ export async function POST(request: NextRequest) {
       'image/png',
       'image/gif',
       'image/webp',
+      'image/svg+xml',
       'application/pdf',
-      'text/plain'
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'text/plain',
+      'text/csv'
     ];
 
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Bu dosya tipi desteklenmiyor. Sadece resim, PDF ve text dosyaları yüklenebilir.' },
+        { error: 'Bu dosya tipi desteklenmiyor. Desteklenen: Resim, PDF, Word, Excel, PowerPoint, Text dosyaları.' },
         { status: 400 }
       );
     }
 
-    // Dosyayı base64'e çevir
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const base64Data = buffer.toString('base64');
-    
     // Dosya adını güvenli hale getir
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 10);
     const fileExtension = file.name.split('.').pop() || 'bin';
-    const safeFileName = `${timestamp}_${randomStr}.${fileExtension}`;
+    const safeFileName = `uploads/${timestamp}_${randomStr}.${fileExtension}`;
 
     // Resim mi kontrol et
     const isImage = file.type.startsWith('image/');
     
-    // Base64 data URL oluştur (preview için)
-    const dataUrl = `data:${file.type};base64,${base64Data}`;
+    // Dosyayı buffer'a çevir
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
     try {
-      // Veritabanına kaydet
-      const attachmentData = {
-        fileName: safeFileName,
-        originalName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-        base64Data: base64Data, // Base64 veri
-        dataUrl: dataUrl, // Preview için
-        uploadedBy: uploadedBy,
-        isImage: isImage,
-        title: title,
-        description: description,
-        uploadedAt: new Date()
-      };
+      // Supabase Storage'a dosya yükle
+      console.log('📤 Supabase Storage\'a yükleniyor:', safeFileName);
+      
+      const { data: uploadData, error: uploadError } = await DatabaseService.uploadFile(
+        safeFileName,
+        buffer,
+        file.type
+      );
 
-      console.log('💾 Base64 veritabanına kaydediliyor:', {
-        fileName: safeFileName,
-        size: file.size,
-        type: file.type,
-        base64Length: base64Data.length
-      });
+      if (uploadError) {
+        console.error('❌ Storage upload hatası:', uploadError);
+        // Fallback: Base64 olarak kaydet
+        const base64Data = buffer.toString('base64');
+        const dataUrl = `data:${file.type};base64,${base64Data}`;
+        
+        const savedAttachment = {
+          id: timestamp,
+          fileName: safeFileName.split('/').pop() || safeFileName,
+          originalName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          filePath: dataUrl, // Base64 fallback
+          uploadedBy: uploadedBy,
+          isImage: isImage,
+          title: title || file.name,
+          description: description,
+          uploadedAt: new Date().toISOString()
+        };
 
-      // Geçici olarak sadece memory'de saklayalım
-      // Gerçek projelerde bu Supabase Storage'a kaydedilir
+        console.log('⚠️ Fallback: Base64 kullanıldı');
+        return NextResponse.json({
+          success: true,
+          attachment: savedAttachment,
+          message: 'Dosya başarıyla yüklendi (Base64 fallback)'
+        });
+      }
+
+      // Storage'dan dosya URL'ini al
+      const publicUrl = DatabaseService.getPublicUrl(safeFileName);
+      
+      console.log('✅ Dosya Storage\'a yüklendi:', publicUrl);
+
       const savedAttachment = {
-        id: timestamp, // Unique ID
-        fileName: safeFileName,
+        id: timestamp,
+        fileName: safeFileName.split('/').pop() || safeFileName,
         originalName: file.name,
         fileType: file.type,
         fileSize: file.size,
-        filePath: dataUrl, // Base64 data URL
+        filePath: publicUrl, // Storage URL
         uploadedBy: uploadedBy,
         isImage: isImage,
-        title: title,
+        title: title || file.name,
         description: description,
         uploadedAt: new Date().toISOString()
       };

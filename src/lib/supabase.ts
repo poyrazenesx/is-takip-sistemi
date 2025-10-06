@@ -386,6 +386,62 @@ export class DatabaseService {
     console.log('✅ Supabase note history found:', data?.length || 0);
     return data || [];
   }
+
+  // ================================
+  // DOSYA STORAGE İŞLEMLERİ
+  // ================================
+  
+  // Dosya yükle
+  static async uploadFile(filePath: string, fileBuffer: Buffer, contentType: string) {
+    console.log('📤 Supabase Storage upload:', { filePath, contentType, size: fileBuffer.length });
+    
+    try {
+      const { data, error } = await supabaseAdmin.storage
+        .from('attachments')
+        .upload(filePath, fileBuffer, {
+          contentType: contentType,
+          duplex: 'half'
+        });
+      
+      if (error) {
+        console.error('❌ Storage upload error:', error);
+        return { data: null, error };
+      }
+      
+      console.log('✅ File uploaded to storage:', data);
+      return { data, error: null };
+    } catch (err) {
+      console.error('💥 Storage upload exception:', err);
+      return { data: null, error: err };
+    }
+  }
+  
+  // Public URL al
+  static getPublicUrl(filePath: string): string {
+    const { data } = supabaseAdmin.storage
+      .from('attachments')
+      .getPublicUrl(filePath);
+    
+    console.log('🔗 Public URL generated:', data.publicUrl);
+    return data.publicUrl;
+  }
+  
+  // Dosya sil
+  static async deleteFile(filePath: string) {
+    console.log('🗑️ Deleting file from storage:', filePath);
+    
+    const { data, error } = await supabaseAdmin.storage
+      .from('attachments')
+      .remove([filePath]);
+    
+    if (error) {
+      console.error('❌ Storage delete error:', error);
+      return { data: null, error };
+    }
+    
+    console.log('✅ File deleted from storage');
+    return { data, error: null };
+  }
 }
 
 
