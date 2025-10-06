@@ -15,7 +15,9 @@ const Notes = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [viewingNote, setViewingNote] = useState<Note | null>(null);
   const [noteForm, setNoteForm] = useState({
     title: '',
     content: '',
@@ -156,6 +158,31 @@ const Notes = () => {
     setShowModal(false);
   };
 
+  const handleViewNote = (note: Note) => {
+    setViewingNote(note);
+    setShowDetailModal(true);
+  };
+
+  const handleEditFromDetail = () => {
+    if (viewingNote) {
+      setEditingNote(viewingNote);
+      setNoteForm({
+        title: viewingNote.title,
+        content: viewingNote.content,
+        category: viewingNote.category,
+        attachmentUrl: viewingNote.attachmentUrl || '',
+        attachmentName: viewingNote.attachmentName || ''
+      });
+      setShowDetailModal(false);
+      setShowModal(true);
+    }
+  };
+
+  const closeDetailModal = () => {
+    setViewingNote(null);
+    setShowDetailModal(false);
+  };
+
   const getCategoryInfo = (categoryId: string) => {
     return categories.find(cat => cat.id === categoryId) || { name: categoryId, icon: '📄' };
   };
@@ -260,7 +287,12 @@ const Notes = () => {
                           categoryNotes.map(note => (
                             <div key={note.id} className="border-bottom p-3">
                               <div className="d-flex justify-content-between align-items-start mb-2">
-                                <h6 className="fw-bold mb-1 text-truncate" style={{ maxWidth: '200px' }}>
+                                <h6 
+                                  className="fw-bold mb-1 text-truncate" 
+                                  style={{ maxWidth: '200px', cursor: 'pointer', color: '#667eea' }}
+                                  onClick={() => handleViewNote(note)}
+                                  title="Notu görüntülemek için tıklayın"
+                                >
                                   {note.title}
                                 </h6>
                                 <div className="dropdown">
@@ -291,12 +323,18 @@ const Notes = () => {
                                   </ul>
                                 </div>
                               </div>
-                              <p className="text-muted small mb-2" style={{
-                                display: '-webkit-box',
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden'
-                              }}>
+                              <p 
+                                className="text-muted small mb-2" 
+                                style={{
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 3,
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden',
+                                  cursor: 'pointer'
+                                }}
+                                onClick={() => handleViewNote(note)}
+                                title="Notu görüntülemek için tıklayın"
+                              >
                                 {note.content}
                               </p>
                               <div className="d-flex justify-content-between align-items-center">
@@ -396,6 +434,105 @@ const Notes = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Not Detay Modal */}
+      {showDetailModal && viewingNote && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header bg-primary text-white">
+                <h5 className="modal-title d-flex align-items-center">
+                  {getCategoryInfo(viewingNote.category).icon} 
+                  <span className="ms-2">{viewingNote.title}</span>
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={closeDetailModal}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="mb-3">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="badge bg-info text-dark fs-6">
+                      {getCategoryInfo(viewingNote.category).icon} {getCategoryInfo(viewingNote.category).name}
+                    </span>
+                    <small className="text-muted">
+                      Son Güncelleme: {formatDate(viewingNote.updatedAt)}
+                    </small>
+                  </div>
+                </div>
+                
+                <div className="mb-4">
+                  <h6 className="fw-bold text-muted text-uppercase small mb-2">📄 İçerik</h6>
+                  <div 
+                    className="p-3 bg-light rounded"
+                    style={{
+                      whiteSpace: 'pre-wrap',
+                      minHeight: '200px',
+                      maxHeight: '400px',
+                      overflowY: 'auto',
+                      fontSize: '14px',
+                      lineHeight: '1.6'
+                    }}
+                  >
+                    {viewingNote.content}
+                  </div>
+                </div>
+
+                {viewingNote.attachmentUrl && (
+                  <div className="mb-3">
+                    <h6 className="fw-bold text-muted text-uppercase small mb-2">📎 Ek Dosya</h6>
+                    <div className="p-2 bg-light rounded">
+                      <a 
+                        href={viewingNote.attachmentUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-decoration-none d-flex align-items-center"
+                      >
+                        <i className="bi bi-paperclip me-2"></i>
+                        {viewingNote.attachmentName || 'Ek Dosya'}
+                        <i className="bi bi-box-arrow-up-right ms-2 small"></i>
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                <div className="row">
+                  <div className="col-md-6">
+                    <small className="text-muted">
+                      <strong>Oluşturulma:</strong><br />
+                      {formatDate(viewingNote.createdAt)}
+                    </small>
+                  </div>
+                  <div className="col-md-6">
+                    <small className="text-muted">
+                      <strong>Son Güncelleme:</strong><br />
+                      {formatDate(viewingNote.updatedAt)}
+                    </small>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={closeDetailModal}
+                >
+                  Kapat
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary"
+                  onClick={handleEditFromDetail}
+                >
+                  <i className="bi bi-pencil me-2"></i>Düzenle
+                </button>
+              </div>
             </div>
           </div>
         </div>
