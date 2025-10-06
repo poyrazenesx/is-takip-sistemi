@@ -42,16 +42,14 @@ export default function LoginForm() {
       <style jsx>{`
         .login-container {
           min-height: 100vh;
-          background: ${darkMode 
-            ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' 
-            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
+          background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 50%, #1a365d 100%);
           position: relative;
           overflow: hidden;
           transition: all 0.5s ease;
         }
         
         .login-container.dark {
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+          background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
         }
         
         .login-container::before {
@@ -66,22 +64,22 @@ export default function LoginForm() {
         }
         
         .login-card {
-          background: ${darkMode 
-            ? 'rgba(30, 30, 50, 0.95)' 
-            : 'rgba(255, 255, 255, 0.98)'} !important;
+          background: rgba(255, 255, 255, 0.98) !important;
           backdrop-filter: blur(20px);
-          border: 1px solid ${darkMode 
-            ? 'rgba(100, 100, 150, 0.3)' 
-            : 'rgba(255, 255, 255, 0.3)'};
-          box-shadow: 0 25px 50px ${darkMode 
-            ? 'rgba(0, 0, 0, 0.4)' 
-            : 'rgba(0, 0, 0, 0.15)'};
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
           position: relative;
           transition: all 0.5s ease;
         }
         
+        .login-container.dark .login-card {
+          background: rgba(15, 23, 42, 0.95) !important;
+          border: 1px solid rgba(71, 85, 105, 0.3);
+          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+        
         .logo-container {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
           animation: float 3s ease-in-out infinite;
         }
         
@@ -91,12 +89,12 @@ export default function LoginForm() {
         }
         
         .form-control {
-          border: 2px solid ${darkMode ? '#4a5568' : '#e9ecef'} !important;
+          border: 2px solid #e9ecef !important;
           border-radius: 15px !important;
           padding: 15px 20px !important;
           font-size: 16px !important;
-          background: ${darkMode ? '#2d3748' : 'white'} !important;
-          color: ${darkMode ? 'white' : '#495057'} !important;
+          background: white !important;
+          color: #495057 !important;
           transition: all 0.3s ease !important;
           pointer-events: auto !important;
           -webkit-user-select: text !important;
@@ -111,29 +109,49 @@ export default function LoginForm() {
           appearance: none !important;
         }
         
+        .login-container.dark .form-control {
+          border: 2px solid #475569 !important;
+          background: #1e293b !important;
+          color: #f1f5f9 !important;
+        }
+        
         .form-control[type="text"], 
         .form-control[type="password"] {
           pointer-events: auto !important;
           cursor: text !important;
           -webkit-user-select: text !important;
           user-select: text !important;
-          background-color: ${darkMode ? '#2d3748' : 'white'} !important;
+          background-color: white !important;
+        }
+        
+        .login-container.dark .form-control[type="text"], 
+        .login-container.dark .form-control[type="password"] {
+          background-color: #1e293b !important;
         }
         
         .form-control::placeholder {
-          color: ${darkMode ? '#a0aec0' : '#6c757d'} !important;
+          color: #6c757d !important;
           opacity: 0.7;
         }
         
+        .login-container.dark .form-control::placeholder {
+          color: #a0aec0 !important;
+        }
+        
         .form-control:focus {
-          border-color: ${darkMode ? '#667eea' : '#667eea'} !important;
-          box-shadow: 0 0 0 0.25rem ${darkMode 
-            ? 'rgba(102, 126, 234, 0.4)' 
-            : 'rgba(102, 126, 234, 0.25)'} !important;
-          background: ${darkMode ? '#2d3748' : 'white'} !important;
-          color: ${darkMode ? 'white' : '#495057'} !important;
+          border-color: #1e3a5f !important;
+          box-shadow: 0 0 0 0.25rem rgba(30, 58, 95, 0.25) !important;
+          background: white !important;
+          color: #495057 !important;
           outline: none !important;
           pointer-events: auto !important;
+        }
+        
+        .login-container.dark .form-control:focus {
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.4) !important;
+          background: #1e293b !important;
+          color: #f1f5f9 !important;
         }
         
         .form-control:hover {
@@ -147,9 +165,7 @@ export default function LoginForm() {
         }
         
         .btn-login {
-          background: ${darkMode 
-            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
-            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
+          background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
           border: none;
           padding: 15px 30px;
           font-size: 18px;
@@ -186,9 +202,13 @@ export default function LoginForm() {
         
         .form-label {
           font-weight: 600;
-          color: ${darkMode ? '#e2e8f0' : '#495057'};
+          color: #495057;
           margin-bottom: 10px;
           transition: color 0.3s ease;
+        }
+        
+        .login-container.dark .form-label {
+          color: #e2e8f0;
         }
         
         .alert-custom {
@@ -237,8 +257,15 @@ export default function LoginForm() {
           pointer-events: auto !important;
           -webkit-user-select: text !important;
           cursor: text !important;
-          background: ${darkMode ? '#2d3748' : 'white'} !important;
-          color: ${darkMode ? 'white' : '#495057'} !important;
+          background: white !important;
+          color: #495057 !important;
+        }
+        
+        .login-container.dark input, 
+        .login-container.dark textarea, 
+        .login-container.dark select {
+          background: #1e293b !important;
+          color: #f1f5f9 !important;
         }
         
         /* Input focus sorunlarını çöz */
@@ -253,32 +280,47 @@ export default function LoginForm() {
           top: 20px;
           right: 20px;
           z-index: 1100;
-          background: ${darkMode ? '#2d3748' : 'white'};
-          border: 2px solid ${darkMode ? '#4a5568' : '#e9ecef'};
+          background: white;
+          border: 2px solid #e9ecef;
           border-radius: 50px;
           padding: 10px 15px;
           cursor: pointer;
           transition: all 0.3s ease;
-          color: ${darkMode ? '#e2e8f0' : '#495057'};
-          box-shadow: 0 4px 15px ${darkMode 
-            ? 'rgba(0, 0, 0, 0.3)' 
-            : 'rgba(0, 0, 0, 0.1)'};
+          color: #495057;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .login-container.dark .theme-toggle {
+          background: #1e293b;
+          border: 2px solid #475569;
+          color: #e2e8f0;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
         
         .theme-toggle:hover {
           transform: scale(1.05);
-          box-shadow: 0 6px 20px ${darkMode 
-            ? 'rgba(102, 126, 234, 0.3)' 
-            : 'rgba(102, 126, 234, 0.2)'};
+          box-shadow: 0 6px 20px rgba(30, 58, 95, 0.2);
+        }
+        
+        .login-container.dark .theme-toggle:hover {
+          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
         }
         
         .card-title {
-          color: ${darkMode ? '#e2e8f0' : '#495057'};
+          color: #495057;
           transition: color 0.3s ease;
         }
         
+        .login-container.dark .card-title {
+          color: #e2e8f0;
+        }
+        
         .text-muted {
-          color: ${darkMode ? '#a0aec0' : '#6c757d'} !important;
+          color: #6c757d !important;
+        }
+        
+        .login-container.dark .text-muted {
+          color: #a0aec0 !important;
         }
           -moz-user-select: text !important;
           user-select: text !important;
@@ -374,9 +416,7 @@ export default function LoginForm() {
                         MozUserSelect: 'text',
                         touchAction: 'manipulation',
                         zIndex: 1001,
-                        position: 'relative',
-                        backgroundColor: darkMode ? '#2d3748' : 'white',
-                        color: darkMode ? 'white' : '#495057'
+                        position: 'relative'
                       }}
                     />
                   </div>
@@ -406,8 +446,6 @@ export default function LoginForm() {
                           touchAction: 'manipulation',
                           zIndex: 1001,
                           position: 'relative',
-                          backgroundColor: darkMode ? '#2d3748' : 'white',
-                          color: darkMode ? 'white' : '#495057',
                           paddingRight: '50px'
                         }}
                       />

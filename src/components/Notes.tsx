@@ -28,6 +28,7 @@ const Notes = ({ searchTerm = '' }: NotesProps) => {
   });
   const [noteAttachments, setNoteAttachments] = useState<Attachment[]>([]);
   const [showFileUpload, setShowFileUpload] = useState(false);
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
 
   // Default kategoriler
   const defaultCategories: NoteCategory[] = [
@@ -72,14 +73,21 @@ const Notes = ({ searchTerm = '' }: NotesProps) => {
     
     try {
       if (editingNote) {
-        // Güncelleme
-        console.log('Güncelleme yapılıyor:', editingNote.id, noteForm);
+        // Güncelleme - attachments ile birlikte
+        console.log('Güncelleme yapılıyor:', editingNote.id, noteForm, 'Attachments:', noteAttachments);
+        
+        // Attachment bilgilerini güncelle
+        const attachmentUrl = noteAttachments.length > 0 ? noteAttachments[0].filePath : noteForm.attachmentUrl;
+        const attachmentName = noteAttachments.length > 0 ? noteAttachments[0].fileName : noteForm.attachmentName;
+        
         const response = await fetch('/api/notes', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             id: editingNote.id,
             ...noteForm,
+            attachmentUrl,
+            attachmentName,
             updatedBy: user?.id || 1
           }),
         });
@@ -101,13 +109,20 @@ const Notes = ({ searchTerm = '' }: NotesProps) => {
           alert('❌ Not güncellenemedi: ' + (errorData.error || 'Bilinmeyen hata'));
         }
       } else {
-        // Yeni not
-        console.log('Yeni not oluşturuluyor:', noteForm);
+        // Yeni not - attachments ile birlikte
+        console.log('Yeni not oluşturuluyor:', noteForm, 'Attachments:', noteAttachments);
+        
+        // Attachment bilgilerini noteForm'a ekle
+        const attachmentUrl = noteAttachments.length > 0 ? noteAttachments[0].filePath : noteForm.attachmentUrl;
+        const attachmentName = noteAttachments.length > 0 ? noteAttachments[0].fileName : noteForm.attachmentName;
+        
         const response = await fetch('/api/notes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             ...noteForm,
+            attachmentUrl,
+            attachmentName,
             createdBy: user?.id || 1
           }),
         });
