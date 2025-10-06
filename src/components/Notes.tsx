@@ -85,12 +85,20 @@ const Notes = ({ searchTerm = '' }: NotesProps) => {
         });
 
         if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Güncelleme başarılı:', result);
           fetchNotes();
           resetForm();
           alert('✅ Not başarıyla güncellendi!');
         } else {
-          const errorData = await response.text();
-          alert('❌ Not güncellenemedi: ' + errorData);
+          let errorData;
+          try {
+            errorData = await response.json();
+          } catch {
+            errorData = { error: await response.text() };
+          }
+          console.error('❌ Güncelleme hatası:', errorData);
+          alert('❌ Not güncellenemedi: ' + (errorData.error || 'Bilinmeyen hata'));
         }
       } else {
         // Yeni not

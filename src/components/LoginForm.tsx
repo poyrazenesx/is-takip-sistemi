@@ -10,6 +10,7 @@ export default function LoginForm() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,9 +42,16 @@ export default function LoginForm() {
       <style jsx>{`
         .login-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: ${darkMode 
+            ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' 
+            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
           position: relative;
           overflow: hidden;
+          transition: all 0.5s ease;
+        }
+        
+        .login-container.dark {
+          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
         }
         
         .login-container::before {
@@ -58,11 +66,18 @@ export default function LoginForm() {
         }
         
         .login-card {
-          background: rgba(255, 255, 255, 0.98) !important;
+          background: ${darkMode 
+            ? 'rgba(30, 30, 50, 0.95)' 
+            : 'rgba(255, 255, 255, 0.98)'} !important;
           backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+          border: 1px solid ${darkMode 
+            ? 'rgba(100, 100, 150, 0.3)' 
+            : 'rgba(255, 255, 255, 0.3)'};
+          box-shadow: 0 25px 50px ${darkMode 
+            ? 'rgba(0, 0, 0, 0.4)' 
+            : 'rgba(0, 0, 0, 0.15)'};
           position: relative;
+          transition: all 0.5s ease;
         }
         
         .logo-container {
@@ -76,11 +91,12 @@ export default function LoginForm() {
         }
         
         .form-control {
-          border: 2px solid #e9ecef !important;
+          border: 2px solid ${darkMode ? '#4a5568' : '#e9ecef'} !important;
           border-radius: 15px !important;
           padding: 15px 20px !important;
           font-size: 16px !important;
-          background: white !important;
+          background: ${darkMode ? '#2d3748' : 'white'} !important;
+          color: ${darkMode ? 'white' : '#495057'} !important;
           transition: all 0.3s ease !important;
           pointer-events: auto !important;
           -webkit-user-select: text !important;
@@ -95,10 +111,27 @@ export default function LoginForm() {
           appearance: none !important;
         }
         
+        .form-control[type="text"], 
+        .form-control[type="password"] {
+          pointer-events: auto !important;
+          cursor: text !important;
+          -webkit-user-select: text !important;
+          user-select: text !important;
+          background-color: ${darkMode ? '#2d3748' : 'white'} !important;
+        }
+        
+        .form-control::placeholder {
+          color: ${darkMode ? '#a0aec0' : '#6c757d'} !important;
+          opacity: 0.7;
+        }
+        
         .form-control:focus {
-          border-color: #667eea !important;
-          box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25) !important;
-          background: white !important;
+          border-color: ${darkMode ? '#667eea' : '#667eea'} !important;
+          box-shadow: 0 0 0 0.25rem ${darkMode 
+            ? 'rgba(102, 126, 234, 0.4)' 
+            : 'rgba(102, 126, 234, 0.25)'} !important;
+          background: ${darkMode ? '#2d3748' : 'white'} !important;
+          color: ${darkMode ? 'white' : '#495057'} !important;
           outline: none !important;
           pointer-events: auto !important;
         }
@@ -114,7 +147,9 @@ export default function LoginForm() {
         }
         
         .btn-login {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: ${darkMode 
+            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
           border: none;
           padding: 15px 30px;
           font-size: 18px;
@@ -126,6 +161,7 @@ export default function LoginForm() {
           z-index: 1000 !important;
           pointer-events: auto !important;
           cursor: pointer !important;
+          color: white !important;
         }
         
         .btn-login::before {
@@ -150,8 +186,9 @@ export default function LoginForm() {
         
         .form-label {
           font-weight: 600;
-          color: #495057;
+          color: ${darkMode ? '#e2e8f0' : '#495057'};
           margin-bottom: 10px;
+          transition: color 0.3s ease;
         }
         
         .alert-custom {
@@ -193,11 +230,56 @@ export default function LoginForm() {
         
         form {
           position: relative;
+          z-index: 10;
         }
         
         input, textarea, select {
           pointer-events: auto !important;
           -webkit-user-select: text !important;
+          cursor: text !important;
+          background: ${darkMode ? '#2d3748' : 'white'} !important;
+          color: ${darkMode ? 'white' : '#495057'} !important;
+        }
+        
+        /* Input focus sorunlarını çöz */
+        .login-card input:focus,
+        .login-card input:active {
+          pointer-events: auto !important;
+          cursor: text !important;
+        }
+        
+        .theme-toggle {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          z-index: 1100;
+          background: ${darkMode ? '#2d3748' : 'white'};
+          border: 2px solid ${darkMode ? '#4a5568' : '#e9ecef'};
+          border-radius: 50px;
+          padding: 10px 15px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          color: ${darkMode ? '#e2e8f0' : '#495057'};
+          box-shadow: 0 4px 15px ${darkMode 
+            ? 'rgba(0, 0, 0, 0.3)' 
+            : 'rgba(0, 0, 0, 0.1)'};
+        }
+        
+        .theme-toggle:hover {
+          transform: scale(1.05);
+          box-shadow: 0 6px 20px ${darkMode 
+            ? 'rgba(102, 126, 234, 0.3)' 
+            : 'rgba(102, 126, 234, 0.2)'};
+        }
+        
+        .card-title {
+          color: ${darkMode ? '#e2e8f0' : '#495057'};
+          transition: color 0.3s ease;
+        }
+        
+        .text-muted {
+          color: ${darkMode ? '#a0aec0' : '#6c757d'} !important;
+        }
           -moz-user-select: text !important;
           user-select: text !important;
           cursor: text !important;
@@ -221,7 +303,25 @@ export default function LoginForm() {
         }
       `}</style>
 
-      <div className="login-container d-flex align-items-center justify-content-center">
+      <div className={`login-container d-flex align-items-center justify-content-center ${darkMode ? 'dark' : ''}`}>
+        {/* Theme Toggle Button */}
+        <button 
+          className="theme-toggle d-flex align-items-center gap-2"
+          onClick={() => setDarkMode(!darkMode)}
+          title={darkMode ? 'Açık tema' : 'Koyu tema'}
+        >
+          {darkMode ? (
+            <>
+              <span>☀️</span>
+              <span>Açık</span>
+            </>
+          ) : (
+            <>
+              <span>🌙</span>
+              <span>Koyu</span>
+            </>
+          )}
+        </button>
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-md-6 col-lg-5">
@@ -265,13 +365,18 @@ export default function LoginForm() {
                       placeholder="Kullanıcı adınızı girin"
                       required
                       autoComplete="username"
+                      autoFocus
                       style={{
                         pointerEvents: 'auto',
                         cursor: 'text',
                         userSelect: 'text',
                         WebkitUserSelect: 'text',
                         MozUserSelect: 'text',
-                        touchAction: 'manipulation'
+                        touchAction: 'manipulation',
+                        zIndex: 1001,
+                        position: 'relative',
+                        backgroundColor: darkMode ? '#2d3748' : 'white',
+                        color: darkMode ? 'white' : '#495057'
                       }}
                     />
                   </div>
@@ -281,25 +386,45 @@ export default function LoginForm() {
                     <label htmlFor="password" className="form-label">
                       🔐 Şifre
                     </label>
-                    <input
-                      type="password"
-                      className="form-control form-control-lg"
-                      id="password"
-                      name="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Şifrenizi girin"
-                      required
-                      autoComplete="current-password"
-                      style={{
-                        pointerEvents: 'auto',
-                        cursor: 'text',
-                        userSelect: 'text',
-                        WebkitUserSelect: 'text',
-                        MozUserSelect: 'text',
-                        touchAction: 'manipulation'
-                      }}
-                    />
+                    <div className="position-relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        className="form-control form-control-lg"
+                        id="password"
+                        name="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Şifrenizi girin"
+                        required
+                        autoComplete="current-password"
+                        style={{
+                          pointerEvents: 'auto',
+                          cursor: 'text',
+                          userSelect: 'text',
+                          WebkitUserSelect: 'text',
+                          MozUserSelect: 'text',
+                          touchAction: 'manipulation',
+                          zIndex: 1001,
+                          position: 'relative',
+                          backgroundColor: darkMode ? '#2d3748' : 'white',
+                          color: darkMode ? 'white' : '#495057',
+                          paddingRight: '50px'
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-link position-absolute end-0 top-50 translate-middle-y me-3"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{ 
+                          zIndex: 1002, 
+                          border: 'none',
+                          background: 'transparent',
+                          color: '#6c757d'
+                        }}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Giriş Butonu */}
