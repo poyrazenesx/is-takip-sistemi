@@ -27,6 +27,14 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.env.production
+
+# uploads and sensitive data
+/public/uploads/*
+!/public/uploads/.gitkeep
+/backups/
+/logs/
+*.log
 
 # vercel
 .vercel
@@ -34,3 +42,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Security and sensitive files
+config/production.json
+scripts/production/
+.secrets/
+*.key
+*.pem
+*.p12

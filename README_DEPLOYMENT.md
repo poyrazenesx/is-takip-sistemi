@@ -1,5 +1,5 @@
 # 🏥 İŞ TAKİP SİSTEMİ - SERVER DEPLOYMENT
-**Tavşanlı Doç.Dr.Mustafa KALEMLİ Devlet Hastanesi - Bilgi İşlem Birimi**
+**Hastane Bilgi İşlem Sistemi**
 
 ## 🚀 Hızlı Kurulum (Otomatik)
 

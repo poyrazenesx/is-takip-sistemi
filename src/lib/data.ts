@@ -4,23 +4,23 @@ import { User, Task } from '@/types';
 export const users: User[] = [
   {
     id: 1,
-    username: 'epoyraz',
-    password: 'epoyraz43',
-    name: 'Enes Poyraz',
+    username: 'admin',
+    password: 'admin123',
+    name: 'System Admin',
     role: 'admin'
   },
   {
     id: 2,
-    username: 'ismail',
-    password: '123',
-    name: 'İsmail Arslan',
+    username: 'user1',
+    password: 'user123',
+    name: 'User One',
     role: 'member'
   },
   {
     id: 3,
-    username: 'köroğlu',
-    password: '123',
-    name: 'Ali Köroğlu',
+    username: 'user2',
+    password: 'user123',
+    name: 'User Two',
     role: 'member'
   },
   {

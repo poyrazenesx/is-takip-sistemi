@@ -19,9 +19,9 @@ export async function POST(request: NextRequest) {
 
     // Fallback kullanıcılar (Supabase çalışmazsa)
     const fallbackUsers = [
-      { id: 1, username: 'epoyraz', password: 'epoyraz43', name: 'Enes Poyraz', role: 'admin' },
-      { id: 2, username: 'ismail', password: '123', name: 'İsmail Arslan', role: 'member' },
-      { id: 3, username: 'köroğlu', password: '123', name: 'Ali Köroğlu', role: 'member' },
+      { id: 1, username: 'admin', password: 'admin123', name: 'System Admin', role: 'admin' },
+      { id: 2, username: 'user1', password: 'user123', name: 'User One', role: 'member' },
+      { id: 3, username: 'user2', password: 'user123', name: 'User Two', role: 'member' },
       { id: 4, username: 'serkan', password: '123', name: 'Serkan Özil', role: 'member' }
     ];
 

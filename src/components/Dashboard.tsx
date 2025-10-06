@@ -472,7 +472,7 @@ export default function Dashboard({ users }: DashboardProps) {
                 <h5 className="text-muted mb-0">
                   Hoş geldin, <span className="fw-bold" style={{color: '#667eea'}}>{user?.name}</span> 👋
                 </h5>
-                <p className="text-muted small mb-0">Tavşanlı Doç.Dr.Mustafa KALEMLİ Devlet Hastanesi - BİLGİ İŞLEM BİRİMİ</p>
+                <p className="text-muted small mb-0">Hastane Bilgi İşlem Sistemi</p>
               </div>
               <div className="col-md-6 text-end">
 

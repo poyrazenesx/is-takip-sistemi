@@ -1,6 +1,6 @@
 # İş Takip Sistemi
 
-Modern ve kullanıcı dostu bir ekip iş takip uygulaması. Tavşanlı Doç.Dr.Mustafa KALEMLİ Devlet Hastanesi - BİLGİ İŞLEM BİRİMİ için geliştirilmiş olan bu uygulama, 3 kişilik ekipler için kullanıcı girişi, görev yönetimi ve işbirliği özellikleri sunar.
+Modern ve kullanıcı dostu bir ekip iş takip uygulaması. Hastane bilgi işlem birimleri için geliştirilmiş olan bu uygulama, ekip yönetimi, kullanıcı girişi, görev takibi ve işbirliği özellikleri sunar.
 
 🌐 **Live Demo:** https://is-takip-sistemi.vercel.app
 
@@ -19,8 +19,8 @@ SUPABASE_SERVICE_ROLE_KEY=[Supabase service role key]
 ```
 
 ## 🔐 Giriş Bilgileri
-- **Admin:** `epoyraz` / `epoyraz43`
-- **Kullanıcılar:** `ismail/123`, `köroğlu/123`, `serkan/123`
+- **Admin:** `admin` / `admin123`
+- **Kullanıcılar:** `user1/user123`, `user2/user123`
 
 ## Özellikler
 

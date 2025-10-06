@@ -232,7 +232,7 @@ export default function LoginForm() {
                     <LogIn className="text-white" size={32} />
                   </div>
                   <h2 className="gradient-text fw-bold mb-3">İş Takip Sistemi</h2>
-                  <h5 className="text-muted mb-2">Tavşanlı Doç.Dr.Mustafa KALEMLİ Devlet Hastanesi</h5>
+                  <h5 className="text-muted mb-2">Hastane Bilgi İşlem Sistemi</h5>
                   <p className="text-muted small">BİLGİ İŞLEM BİRİMİ</p>
                 </div>
 
