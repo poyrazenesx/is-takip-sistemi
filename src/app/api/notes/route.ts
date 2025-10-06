@@ -177,8 +177,13 @@ export async function POST(request: NextRequest) {
 
 // PUT - Not güncelle
 export async function PUT(request: NextRequest) {
+  console.log('🔄 PUT /api/notes ENDPOINT HİT - 404 SORUNU DEBUG');
+  console.log('Request URL:', request.url);
+  console.log('Request method:', request.method);
+  
   try {
     const { id, updatedBy, ...updateData } = await request.json();
+    console.log('PUT Request Data:', { id, updateData });
     
     if (!id) {
       return NextResponse.json(
