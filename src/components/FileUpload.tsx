@@ -339,8 +339,6 @@ const FileUpload = ({
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          onClick={openFileDialog}
-          style={{ cursor: 'pointer' }}
         >
           <div className="upload-icon">
             <svg width="30" height="30" fill="currentColor" className="text-white" viewBox="0 0 16 16">
@@ -359,6 +357,7 @@ const FileUpload = ({
           
           <button 
             className="upload-btn"
+            onClick={openFileDialog}
             disabled={uploading}
           >
             {uploading ? (
