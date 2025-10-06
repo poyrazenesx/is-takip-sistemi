@@ -40,6 +40,33 @@ export interface DbTask {
   priority: 'low' | 'medium' | 'high';
 }
 
+// Not tablosu için tip tanımları
+export interface DbNote {
+  id: number;
+  title: string;
+  content: string;
+  category: 'servis' | 'poliklinikler' | 'eczane' | 'genel-hasta-kayit' | 'kalite' | 'dilekceler' | 'idare';
+  created_by: number;
+  updated_by: number;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+  attachment_url?: string;
+  attachment_name?: string;
+}
+
+// Not geçmiş tablosu için tip tanımları
+export interface DbNoteHistory {
+  id: number;
+  note_id: number;
+  action: 'created' | 'updated' | 'deleted';
+  old_content?: string;
+  new_content?: string;
+  changed_by: number;
+  changed_at: string;
+  change_description: string;
+}
+
 // Veritabanı işlemleri
 export class DatabaseService {
   
@@ -203,6 +230,126 @@ export class DatabaseService {
     } catch (error) {
       console.error('Veritabanı initialization hatası:', error);
     }
+  }
+
+  // ================================
+  // NOT İŞLEMLERİ
+  // ================================
+  
+  // Notları getir
+  static async getNotes(category?: string | null): Promise<DbNote[]> {
+    console.log('🔍 Supabase getNotes çağrıldı:', { category });
+    
+    let query = supabaseAdmin
+      .from('notes')
+      .select('*')
+      .eq('is_active', true)
+      .order('updated_at', { ascending: false });
+    
+    if (category) {
+      query = query.eq('category', category);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('❌ Supabase getNotes error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Supabase notes found:', data?.length || 0);
+    return data || [];
+  }
+
+  // Not oluştur
+  static async createNote(noteData: Partial<DbNote> & {
+    title: string;
+    content: string;
+    category: string;
+    created_by: number;
+    updated_by: number;
+  }): Promise<DbNote> {
+    console.log('🔍 Supabase createNote çağrıldı:', noteData);
+
+    // Default değerleri ekle
+    const noteWithDefaults = {
+      is_active: true,
+      ...noteData
+    };
+    
+    const { data, error } = await supabaseAdmin
+      .from('notes')
+      .insert([noteWithDefaults])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('❌ Supabase createNote error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Supabase note created:', data);
+    return data;
+  }
+
+  // Not güncelle
+  static async updateNote(id: number, updateData: Partial<DbNote>): Promise<DbNote> {
+    console.log('🔍 Supabase updateNote çağrıldı:', { id, updateData });
+    
+    const { data, error } = await supabaseAdmin
+      .from('notes')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('❌ Supabase updateNote error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Supabase note updated:', data);
+    return data;
+  }
+
+  // Not sil (soft delete)
+  static async deleteNote(id: number): Promise<boolean> {
+    console.log('🔍 Supabase deleteNote çağrıldı:', id);
+    
+    const { error } = await supabaseAdmin
+      .from('notes')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    
+    if (error) {
+      console.error('❌ Supabase deleteNote error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Supabase note deleted (soft)');
+    return true;
+  }
+
+  // Not geçmişini getir
+  static async getNoteHistory(noteId: number): Promise<DbNoteHistory[]> {
+    console.log('🔍 Supabase getNoteHistory çağrıldı:', noteId);
+    
+    const { data, error } = await supabaseAdmin
+      .from('note_history')
+      .select(`
+        *,
+        users!changed_by (name)
+      `)
+      .eq('note_id', noteId)
+      .order('changed_at', { ascending: false });
+    
+    if (error) {
+      console.error('❌ Supabase getNoteHistory error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Supabase note history found:', data?.length || 0);
+    return data || [];
   }
 }
 

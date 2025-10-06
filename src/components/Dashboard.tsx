@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User } from '@/types';
 import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon } from 'lucide-react';
+import Notes from './Notes';
 
 interface DashboardProps {
   users: User[];
@@ -15,6 +16,7 @@ export default function Dashboard({ users }: DashboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [activeTab, setActiveTab] = useState<'tasks' | 'notes'>('tasks');
 
   // Form verileri
   const [taskForm, setTaskForm] = useState({
@@ -538,11 +540,51 @@ export default function Dashboard({ users }: DashboardProps) {
             </div>
           </div>
           
-          {/* Görevler Tablosu */}
-          <div className="tasks-table-card">
-            <div className="table-header">
-              <div className="d-flex justify-content-between align-items-center">
-                <h2 className="gradient-text fw-bold fs-3 mb-0">📋 Görevler</h2>
+          {/* Tab Navigation */}
+          <div className="row mb-4">
+            <div className="col-12">
+              <div className="card shadow-sm">
+                <div className="card-body p-0">
+                  <ul className="nav nav-pills nav-fill">
+                    <li className="nav-item">
+                      <button
+                        className={`nav-link ${activeTab === 'tasks' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('tasks')}
+                        style={{
+                          background: activeTab === 'tasks' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
+                          border: 'none',
+                          color: activeTab === 'tasks' ? 'white' : '#666'
+                        }}
+                      >
+                        📋 Görevler
+                      </button>
+                    </li>
+                    <li className="nav-item">
+                      <button
+                        className={`nav-link ${activeTab === 'notes' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('notes')}
+                        style={{
+                          background: activeTab === 'notes' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
+                          border: 'none',
+                          color: activeTab === 'notes' ? 'white' : '#666'
+                        }}
+                      >
+                        📝 Birim Notları
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tab Content */}
+          {activeTab === 'tasks' && (
+            /* Görevler Tablosu */
+            <div className="tasks-table-card">
+              <div className="table-header">
+                <div className="d-flex justify-content-between align-items-center">
+                  <h2 className="gradient-text fw-bold fs-3 mb-0">📋 Görevler</h2>
                 <div className="d-flex gap-2">
                   <div style={{width: '12px', height: '12px', backgroundColor: '#ff6b6b', borderRadius: '50%'}}></div>
                   <div style={{width: '12px', height: '12px', backgroundColor: '#feca57', borderRadius: '50%'}}></div>
@@ -646,6 +688,12 @@ export default function Dashboard({ users }: DashboardProps) {
               </div>
             )}
           </div>
+          )}
+
+          {/* Notes Tab Content */}
+          {activeTab === 'notes' && (
+            <Notes />
+          )}
         </main>
 
         {/* Görev Formu Modal */}
