@@ -114,3 +114,5 @@ Bu proje modern web geliştirme standartlarını takip eder:
 ## Lisans
 
 Bu proje MIT lisansı altında lisanslanmıştır.
+
+# Last deployment: 10/06/2025 15:28:04
