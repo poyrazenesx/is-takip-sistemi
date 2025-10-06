@@ -1,0 +1,118 @@
+# İŞ TAKİP SİSTEMİ - CRONTAB AYARLARI
+# Tavşanlı Doç.Dr.Mustafa KALEMLİ Devlet Hastanesi
+# Bilgi İşlem Birimi - 2025
+
+# Bu dosyayı crontab'a eklemek için:
+# crontab -e
+# Sonra aşağıdaki satırları kopyala-yapıştır
+
+# =======================================================
+# YEDEKLİ İŞLEMLERİ
+# =======================================================
+
+# Günlük yedek - Her gece saat 02:00
+0 2 * * * /path/to/your/app/scripts/backup.sh >> /var/log/is-takip-sistemi/backup_cron.log 2>&1
+
+# Haftalık yedek kontrolü - Her Pazartesi saat 03:00  
+0 3 * * 1 /path/to/your/app/scripts/backup.sh >> /var/log/is-takip-sistemi/backup_weekly.log 2>&1
+
+# Aylık yedek kontrolü - Her ayın 1'i saat 04:00
+0 4 1 * * /path/to/your/app/scripts/backup.sh >> /var/log/is-takip-sistemi/backup_monthly.log 2>&1
+
+# =======================================================
+# BAKIM İŞLEMLERİ
+# =======================================================
+
+# Haftalık sistem bakımı - Her Pazar saat 05:00
+0 5 * * 0 /path/to/your/app/scripts/maintenance.sh >> /var/log/is-takip-sistemi/maintenance_cron.log 2>&1
+
+# Günlük log temizliği - Her gece saat 01:00
+0 1 * * * find /var/log/is-takip-sistemi -name "*.log" -mtime +30 -delete 2>/dev/null
+
+# Günlük geçici dosya temizliği - Her gece saat 01:30
+30 1 * * * find /tmp -name "*is-takip*" -mtime +1 -delete 2>/dev/null
+
+# =======================================================
+# VERİTABANI İŞLEMLERİ
+# =======================================================
+
+# Haftalık veritabanı analiz - Her Cumartesi saat 06:00
+0 6 * * 6 psql -d your_database_name -c "ANALYZE;" >> /var/log/is-takip-sistemi/db_analyze.log 2>&1
+
+# Aylık veritabanı vacuum - Her ayın 15'i saat 07:00
+0 7 15 * * psql -d your_database_name -c "VACUUM;" >> /var/log/is-takip-sistemi/db_vacuum.log 2>&1
+
+# =======================================================
+# SAĞLIK KONTROL İŞLEMLERİ  
+# =======================================================
+
+# Saatlik uygulama durumu kontrolü
+0 * * * * curl -f -s http://localhost:3000/api/health > /dev/null 2>&1 || echo "$(date): Uygulama erişilebilir değil" >> /var/log/is-takip-sistemi/health_check.log
+
+# 15 dakikada bir disk alanı kontrolü
+*/15 * * * * df / | awk 'NR==2 && $5+0 > 90 {print strftime("%Y-%m-%d %H:%M:%S") ": Disk alanı kritik: " $5}' >> /var/log/is-takip-sistemi/disk_alert.log
+
+# 5 dakikada bir PM2 durumu kontrolü  
+*/5 * * * * pm2 list | grep -q "stopped\|errored" && echo "$(date): PM2 process hatası tespit edildi" >> /var/log/is-takip-sistemi/pm2_alert.log || true
+
+# =======================================================
+# GÜVENLİK İŞLEMLERİ
+# =======================================================
+
+# Günlük başarısız login kontrolü - Her gece saat 23:00
+0 23 * * * grep "Failed password" /var/log/auth.log | tail -20 > /var/log/is-takip-sistemi/failed_logins_$(date +%Y%m%d).log 2>/dev/null || true
+
+# Haftalık dosya izin kontrolü - Her Perşembe saat 08:00
+0 8 * * 4 find /path/to/your/app -type f -perm -002 -exec ls -la {} \; > /var/log/is-takip-sistemi/file_permissions_$(date +%Y%m%d).log 2>/dev/null || true
+
+# =======================================================
+# PERFORMANS İZLEME
+# =======================================================
+
+# Saatlik sistem kaynak kullanımı
+0 * * * * echo "$(date '+%Y-%m-%d %H:%M:%S') - CPU: $(top -bn1 | grep Cpu | awk '{print $2}') - RAM: $(free -m | awk 'NR==2{printf "%.1f%%", $3*100/$2}')" >> /var/log/is-takip-sistemi/performance.log
+
+# Günlük veritabanı boyut takibi - Her gece saat 00:30
+30 0 * * * psql -d your_database_name -t -c "SELECT pg_size_pretty(pg_database_size('your_database_name'));" | xargs echo "$(date '+%Y-%m-%d'): DB Size:" >> /var/log/is-takip-sistemi/db_size.log 2>/dev/null || true
+
+# =======================================================
+# ALERTLEMELERİ
+# =======================================================
+
+# Her 30 dakikada kritik hata kontrolü
+*/30 * * * * grep -i "error\|critical\|fatal" /var/log/is-takip-sistemi/*.log | tail -10 > /tmp/critical_errors.log && [ -s /tmp/critical_errors.log ] && echo "Kritik hatalar tespit edildi - $(date)" >> /var/log/is-takip-sistemi/alerts.log
+
+# Günlük sistem durumu raporu - Her sabah saat 08:00
+0 8 * * * echo "=== Günlük Sistem Raporu $(date +%d.%m.%Y) ===" >> /var/log/is-takip-sistemi/daily_report.log && uptime >> /var/log/is-takip-sistemi/daily_report.log && df -h >> /var/log/is-takip-sistemi/daily_report.log && pm2 list >> /var/log/is-takip-sistemi/daily_report.log 2>&1
+
+# =======================================================
+# KULLANIM ÖRNEKLERİ
+# =======================================================
+
+# Crontab kurulumu:
+# 1. sudo crontab -e
+# 2. Yukarıdaki satırları kopyala
+# 3. Dosya yollarını kendi sisteminize göre düzenleyin
+# 4. Kaydet ve çık (:wq)
+
+# Crontab kontrolü:
+# crontab -l
+
+# Cron loglarını görme:
+# tail -f /var/log/cron
+
+# Log dizinini oluşturma:
+# sudo mkdir -p /var/log/is-takip-sistemi
+# sudo chown your_user:your_group /var/log/is-takip-sistemi
+
+# Script dosyalarına çalıştırma izni verme:
+# chmod +x /path/to/your/app/scripts/*.sh
+
+# =======================================================
+# DİKKAT EDİLMESİ GEREKENLER
+# =======================================================
+# - Tüm dosya yollarını kendi sisteminize göre güncelleyin
+# - Database kullanıcı adı ve şifresini .pgpass dosyasına ekleyin
+# - Log dosyaları için yeterli disk alanı olduğundan emin olun
+# - Script dosyalarının çalıştırılabilir olduğunu kontrol edin
+# - Cron işlemlerinin düzgün çalıştığını periyodik olarak kontrol edin

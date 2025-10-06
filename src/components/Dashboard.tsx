@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User } from '@/types';
-import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon } from 'lucide-react';
-import Notes from './Notes';
+import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search } from 'lucide-react';
+import Notes from '@/components/Notes';
 
 interface DashboardProps {
   users: User[];
@@ -17,6 +17,7 @@ export default function Dashboard({ users }: DashboardProps) {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [activeTab, setActiveTab] = useState<'tasks' | 'notes'>('tasks');
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Form verileri
   const [taskForm, setTaskForm] = useState({
@@ -190,6 +191,21 @@ export default function Dashboard({ users }: DashboardProps) {
       default:
         return priority;
     }
+  };
+
+  const highlightText = (text: string, searchTerm: string) => {
+    if (!searchTerm) return text;
+    
+    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+    
+    return parts.map((part, index) =>
+      regex.test(part) ? (
+        <mark key={index} style={{ background: '#fff3cd', padding: '2px 4px', borderRadius: '3px', fontWeight: 'bold' }}>
+          {part}
+        </mark>
+      ) : part
+    );
   };
 
   if (isLoading) {
@@ -459,6 +475,7 @@ export default function Dashboard({ users }: DashboardProps) {
                 <p className="text-muted small mb-0">Tavşanlı Doç.Dr.Mustafa KALEMLİ Devlet Hastanesi - BİLGİ İŞLEM BİRİMİ</p>
               </div>
               <div className="col-md-6 text-end">
+
                 <button
                   onClick={() => setShowTaskForm(true)}
                   className="btn gradient-btn text-white me-2"
@@ -540,6 +557,45 @@ export default function Dashboard({ users }: DashboardProps) {
             </div>
           </div>
           
+          {/* Arama Kutusu */}
+          <div className="row mb-4">
+            <div className="col-12">
+              <div className="glass-card rounded-4 p-4">
+                <div className="d-flex align-items-center gap-3">
+                  <Search className="text-muted" size={20} />
+                  <input
+                    type="text"
+                    className="form-control form-control-lg border-0 bg-transparent"
+                    placeholder="Not ve görev isimlerinde ara... (örn: hastane, rapor, güncelleme)"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                      fontSize: '16px',
+                      color: '#333'
+                    }}
+                  />
+                  {searchTerm && (
+                    <button
+                      className="btn btn-sm btn-outline-secondary"
+                      onClick={() => setSearchTerm('')}
+                      title="Aramayı temizle"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                {searchTerm && (
+                  <div className="mt-2">
+                    <small className="text-muted">
+                      🔍 Aranıyor: "<strong>{searchTerm}</strong>" 
+                      {activeTab === 'tasks' ? ' (Görevlerde)' : activeTab === 'notes' ? ' (Notlarda)' : ''}
+                    </small>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Tab Navigation */}
           <div className="row mb-4">
             <div className="col-12">
@@ -629,13 +685,19 @@ export default function Dashboard({ users }: DashboardProps) {
                     </tr>
                   </thead>
                   <tbody>
-                    {tasks.map((task, index) => (
+                    {tasks
+                      .filter(task => {
+                        if (!searchTerm) return true;
+                        return task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                               task.description.toLowerCase().includes(searchTerm.toLowerCase());
+                      })
+                      .map((task, index) => (
                       <tr key={task.id} style={{borderBottom: '1px solid rgba(0,0,0,0.05)'}}>
                         <td className="border-0 ps-4 py-4">
                           <div>
-                            <h6 className="fw-bold mb-1 text-dark">{task.title}</h6>
+                            <h6 className="fw-bold mb-1 text-dark">{highlightText(task.title, searchTerm)}</h6>
                             <p className="text-muted small mb-0 bg-light rounded-pill px-3 py-1 d-inline-block">
-                              {task.description}
+                              {highlightText(task.description, searchTerm)}
                             </p>
                           </div>
                         </td>
@@ -692,7 +754,7 @@ export default function Dashboard({ users }: DashboardProps) {
 
           {/* Notes Tab Content */}
           {activeTab === 'notes' && (
-            <Notes />
+            <Notes searchTerm={searchTerm} />
           )}
         </main>
 
@@ -804,6 +866,8 @@ export default function Dashboard({ users }: DashboardProps) {
             </div>
           </div>
         )}
+
+
     </div>
     </>
   );

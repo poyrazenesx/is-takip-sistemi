@@ -170,8 +170,11 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    const noteId = typeof id === 'string' ? parseInt(id) : id;
+    console.log('🔢 ID dönüşümü:', { original: id, converted: noteId });
+
     try {
-      const supabaseNote = await DatabaseService.updateNote(id, {
+      const supabaseNote = await DatabaseService.updateNote(noteId, {
         ...updateData,
         updated_by: updatedBy || 1
       });
@@ -181,7 +184,7 @@ export async function PUT(request: NextRequest) {
       console.error('❌ Supabase güncelleme hatası:', supabaseError);
       
       // Fallback
-      const noteIndex = localNotes.findIndex(note => note.id === id);
+      const noteIndex = localNotes.findIndex(note => note.id === noteId);
       if (noteIndex === -1) {
         return NextResponse.json(
           { error: 'Not bulunamadı' },

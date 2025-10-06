@@ -79,7 +79,7 @@ export default function LoginForm() {
           border-radius: 15px !important;
           padding: 15px 20px !important;
           font-size: 16px !important;
-          background: rgba(255, 255, 255, 0.95) !important;
+          background: white !important;
           transition: all 0.3s ease !important;
           pointer-events: auto !important;
           -webkit-user-select: text !important;
@@ -88,6 +88,10 @@ export default function LoginForm() {
           position: relative !important;
           z-index: 1000 !important;
           cursor: text !important;
+          touch-action: manipulation !important;
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
         }
         
         .form-control:focus {
@@ -95,10 +99,17 @@ export default function LoginForm() {
           box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25) !important;
           background: white !important;
           outline: none !important;
+          pointer-events: auto !important;
         }
         
         .form-control:hover {
-          background: rgba(255, 255, 255, 0.9) !important;
+          background: white !important;
+          border-color: #667eea !important;
+        }
+        
+        .form-control:active {
+          pointer-events: auto !important;
+          background: white !important;
         }
         
         .btn-login {
@@ -190,9 +201,21 @@ export default function LoginForm() {
           user-select: text !important;
           cursor: text !important;
           outline: none !important;
+          touch-action: manipulation !important;
+          -webkit-tap-highlight-color: transparent !important;
         }
         
-        input:focus, textarea:focus {
+        input:focus, textarea:focus, input:active, textarea:active {
+          pointer-events: auto !important;
+          cursor: text !important;
+          outline: none !important;
+        }
+        
+        .login-card {
+          pointer-events: auto !important;
+        }
+        
+        .login-card * {
           pointer-events: auto !important;
         }
       `}</style>
@@ -241,6 +264,14 @@ export default function LoginForm() {
                       placeholder="Kullanıcı adınızı girin"
                       required
                       autoComplete="username"
+                      style={{
+                        pointerEvents: 'auto',
+                        cursor: 'text',
+                        userSelect: 'text',
+                        WebkitUserSelect: 'text',
+                        MozUserSelect: 'text',
+                        touchAction: 'manipulation'
+                      }}
                     />
                   </div>
 
@@ -259,6 +290,14 @@ export default function LoginForm() {
                       placeholder="Şifrenizi girin"
                       required
                       autoComplete="current-password"
+                      style={{
+                        pointerEvents: 'auto',
+                        cursor: 'text',
+                        userSelect: 'text',
+                        WebkitUserSelect: 'text',
+                        MozUserSelect: 'text',
+                        touchAction: 'manipulation'
+                      }}
                     />
                   </div>
 

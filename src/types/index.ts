@@ -6,23 +6,27 @@ export interface User {
   role: 'admin' | 'member';
 }
 
-export interface Task {
-  id: number;
-  title: string;
-  description: string;
-  status: 'todo' | 'in-progress' | 'completed';
-  assignedTo: number; // User ID
-  createdBy: number; // User ID
-  createdAt: Date;
-  updatedAt: Date;
-  priority: 'low' | 'medium' | 'high';
-}
+
 
 export interface AuthContextType {
   user: User | null;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
+}
+
+export interface Attachment {
+  id: number;
+  fileName: string;
+  originalName: string;
+  fileType: string;
+  fileSize: number;
+  filePath: string;
+  uploadedBy: number;
+  uploadedAt: Date;
+  isImage: boolean;
+  thumbnailPath?: string;
+  description?: string;
 }
 
 export interface Note {
@@ -37,6 +41,20 @@ export interface Note {
   isActive?: boolean;
   attachmentUrl?: string;
   attachmentName?: string;
+  attachments?: Attachment[];
+}
+
+export interface Task {
+  id: number;
+  title: string;
+  description: string;
+  status: 'todo' | 'in-progress' | 'completed';
+  assignedTo: number; // User ID
+  createdBy: number; // User ID
+  createdAt: Date;
+  updatedAt: Date;
+  priority: 'low' | 'medium' | 'high';
+  attachments?: Attachment[];
 }
 
 export interface NoteCategory {
