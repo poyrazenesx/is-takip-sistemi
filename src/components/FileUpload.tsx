@@ -26,87 +26,29 @@ const FileUpload = ({
   const [uploadedFiles, setUploadedFiles] = useState<Attachment[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string>('');
+  const [fileTitle, setFileTitle] = useState<string>('');
+  const [fileDescription, setFileDescription] = useState<string>('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFiles = useCallback(async (files: FileList | File[]) => {
+  const handleFiles = useCallback((files: FileList | File[]) => {
     if (!files.length) return;
 
     setError('');
-    setUploading(true);
-    onUploadStart?.();
-
+    
     const fileArray = Array.from(files).slice(0, maxFiles);
-    const newAttachments: Attachment[] = [];
-
-    for (let i = 0; i < fileArray.length; i++) {
-      const file = fileArray[i];
-      const progressKey = file.name + Date.now();
-
-      try {
-        // Dosya boyut kontrolü
-        if (file.size > 10 * 1024 * 1024) {
-          setError(`${file.name}: Dosya boyutu 10MB'dan büyük olamaz`);
-          continue;
-        }
-
-        setUploadProgress(prev => ({ ...prev, [progressKey]: 0 }));
-
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('uploadedBy', user?.id?.toString() || '1');
-        formData.append('description', '');
-
-        // Simulated progress (gerçek progress için daha karmaşık implementasyon gerekir)
-        const progressInterval = setInterval(() => {
-          setUploadProgress(prev => ({
-            ...prev,
-            [progressKey]: Math.min((prev[progressKey] || 0) + 10, 90)
-          }));
-        }, 100);
-
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        clearInterval(progressInterval);
-
-        if (response.ok) {
-          const result = await response.json();
-          setUploadProgress(prev => ({ ...prev, [progressKey]: 100 }));
-          newAttachments.push(result.attachment);
-          
-          // Progress'i temizle
-          setTimeout(() => {
-            setUploadProgress(prev => {
-              const updated = { ...prev };
-              delete updated[progressKey];
-              return updated;
-            });
-          }, 1000);
-        } else {
-          const errorData = await response.json();
-          setError(`${file.name}: ${errorData.error}`);
-        }
-      } catch (error) {
-        console.error('Upload error:', error);
-        setError(`${file.name}: Yükleme hatası`);
-        setUploadProgress(prev => {
-          const updated = { ...prev };
-          delete updated[progressKey];
-          return updated;
-        });
+    
+    // Dosya boyut kontrolü
+    for (const file of fileArray) {
+      if (file.size > 10 * 1024 * 1024) {
+        setError(`${file.name}: Dosya boyutu 10MB'dan büyük olamaz`);
+        return;
       }
     }
-
-    setUploadedFiles(prev => [...prev, ...newAttachments]);
-    setUploading(false);
     
-    if (newAttachments.length > 0) {
-      onUploadComplete?.(newAttachments);
-    }
-  }, [maxFiles, user?.id, onUploadComplete, onUploadStart]);
+    // Sadece seçilen dosyaları state'e kaydet, otomatik upload yapma
+    setSelectedFiles(fileArray);
+  }, [maxFiles]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -171,7 +113,8 @@ const FileUpload = ({
         const formData = new FormData();
         formData.append('file', file);
         formData.append('uploadedBy', user?.id?.toString() || '1');
-        formData.append('description', '');
+        formData.append('title', fileTitle || file.name);
+        formData.append('description', fileDescription);
 
         // Simulated progress
         const progressInterval = setInterval(() => {
@@ -222,10 +165,12 @@ const FileUpload = ({
     if (newAttachments.length > 0) {
       onUploadComplete?.(newAttachments);
       setSelectedFiles([]); // Seçili dosyaları temizle
+      setFileTitle(''); // Başlık temizle
+      setFileDescription(''); // Açıklama temizle
     }
     
     return newAttachments;
-  }, [selectedFiles, maxFiles, user?.id, onUploadComplete, onUploadStart]);
+  }, [selectedFiles, maxFiles, user?.id, onUploadComplete, onUploadStart, fileTitle, fileDescription]);
 
   const removeFile = (index: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
@@ -459,6 +404,37 @@ const FileUpload = ({
         {/* Selected Files Preview */}
         {selectedFiles.length > 0 && (
           <div className="mt-4">
+            {/* File Info Form */}
+            <div className="mb-4 p-3 bg-light rounded-3">
+              <h6 className="fw-bold text-dark mb-3">📝 Dosya Bilgileri</h6>
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <label className="form-label fw-semibold">
+                    📌 Başlık
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Dosya başlığı (opsiyonel)"
+                    value={fileTitle}
+                    onChange={(e) => setFileTitle(e.target.value)}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label fw-semibold">
+                    📄 Açıklama
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Dosya açıklaması (opsiyonel)"
+                    value={fileDescription}
+                    onChange={(e) => setFileDescription(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+            
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h6 className="fw-bold text-dark mb-0">📋 Seçilen Dosyalar ({selectedFiles.length})</h6>
               <button 

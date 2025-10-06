@@ -8,6 +8,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const uploadedBy = Number(formData.get('uploadedBy')) || 1;
+    const title = formData.get('title') as string || '';
     const description = formData.get('description') as string || '';
 
     if (!file) {
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest) {
         dataUrl: dataUrl, // Preview için
         uploadedBy: uploadedBy,
         isImage: isImage,
+        title: title,
         description: description,
         uploadedAt: new Date()
       };
@@ -100,6 +102,7 @@ export async function POST(request: NextRequest) {
         filePath: dataUrl, // Base64 data URL
         uploadedBy: uploadedBy,
         isImage: isImage,
+        title: title,
         description: description,
         uploadedAt: new Date().toISOString()
       };

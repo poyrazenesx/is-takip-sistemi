@@ -26,6 +26,7 @@ export interface Attachment {
   uploadedAt: Date;
   isImage: boolean;
   thumbnailPath?: string;
+  title?: string;
   description?: string;
 }
 
