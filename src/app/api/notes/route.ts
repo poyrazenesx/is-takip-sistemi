@@ -50,15 +50,26 @@ export async function GET(request: NextRequest) {
       const notes = await DatabaseService.getNotes(category);
       console.log('✅ Supabase notes getiriled:', notes?.length || 0);
       
-      // ID'lerin number olduğundan emin ol
-      const processedNotes = notes?.map(note => ({
-        ...note,
-        id: typeof note.id === 'string' ? parseInt(note.id) : note.id,
-        createdBy: typeof note.created_by === 'string' ? parseInt(note.created_by) : note.created_by,
-        updatedBy: typeof note.updated_by === 'string' ? parseInt(note.updated_by) : note.updated_by,
-        createdAt: new Date(note.created_at),
-        updatedAt: new Date(note.updated_at)
-      })) || [];
+      // ID'lerin number olduğundan emin ol ve attachments ekle
+      const processedNotes = await Promise.all((notes || []).map(async (note) => {
+        // Her not için attachments'ları getir
+        let attachments = [];
+        try {
+          attachments = await DatabaseService.getAttachmentsByNoteId(note.id);
+        } catch (attachErr) {
+          console.error('❌ Attachments getirme hatası:', attachErr);
+        }
+        
+        return {
+          ...note,
+          id: typeof note.id === 'string' ? parseInt(note.id) : note.id,
+          createdBy: typeof note.created_by === 'string' ? parseInt(note.created_by) : note.created_by,
+          updatedBy: typeof note.updated_by === 'string' ? parseInt(note.updated_by) : note.updated_by,
+          createdAt: new Date(note.created_at),
+          updatedAt: new Date(note.updated_at),
+          attachments: attachments // Attachments ekle
+        };
+      }));
       
       return NextResponse.json({
         notes: processedNotes,
@@ -131,6 +142,30 @@ export async function POST(request: NextRequest) {
       });
       
       console.log('✅ Supabase not oluştu:', supabaseNote);
+      
+      // Attachments varsa kaydet
+      if (noteData.attachments && noteData.attachments.length > 0) {
+        console.log('📎 Attachments kaydediliyor:', noteData.attachments.length);
+        
+        for (const attachment of noteData.attachments) {
+          try {
+            await DatabaseService.createAttachment({
+              note_id: supabaseNote.id,
+              file_name: attachment.fileName,
+              original_name: attachment.originalName,
+              file_type: attachment.fileType,
+              file_size: attachment.fileSize,
+              file_path: attachment.filePath,
+              is_image: attachment.isImage,
+              title: attachment.title,
+              description: attachment.description,
+              uploaded_by: noteData.createdBy
+            });
+          } catch (attachErr) {
+            console.error('❌ Attachment kayıt hatası:', attachErr);
+          }
+        }
+      }
       
       // Response'u process et
       const processedNote = {

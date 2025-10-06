@@ -442,6 +442,77 @@ export class DatabaseService {
     console.log('✅ File deleted from storage');
     return { data, error: null };
   }
+
+  // ================================
+  // ATTACHMENT İŞLEMLERİ
+  // ================================
+  
+  // Attachment kaydet
+  static async createAttachment(attachmentData: {
+    note_id: number;
+    file_name: string;
+    original_name: string;
+    file_type: string;
+    file_size: number;
+    file_path: string;
+    is_image: boolean;
+    title?: string;
+    description?: string;
+    uploaded_by: number;
+  }) {
+    console.log('📎 Supabase createAttachment:', attachmentData);
+    
+    const { data, error } = await supabaseAdmin
+      .from('attachments')
+      .insert([attachmentData])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('❌ Attachment create error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Attachment created:', data);
+    return data;
+  }
+  
+  // Note'a ait attachments'ları getir
+  static async getAttachmentsByNoteId(noteId: number) {
+    console.log('📎 Getting attachments for note:', noteId);
+    
+    const { data, error } = await supabaseAdmin
+      .from('attachments')
+      .select('*')
+      .eq('note_id', noteId)
+      .order('uploaded_at', { ascending: false });
+    
+    if (error) {
+      console.error('❌ Get attachments error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Attachments found:', data?.length || 0);
+    return data || [];
+  }
+  
+  // Attachment sil
+  static async deleteAttachment(id: number) {
+    console.log('🗑️ Deleting attachment:', id);
+    
+    const { error } = await supabaseAdmin
+      .from('attachments')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('❌ Delete attachment error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Attachment deleted');
+    return true;
+  }
 }
 
 
