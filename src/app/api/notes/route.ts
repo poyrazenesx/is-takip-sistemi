@@ -49,8 +49,19 @@ export async function GET(request: NextRequest) {
     try {
       const notes = await DatabaseService.getNotes(category);
       console.log('✅ Supabase notes getiriled:', notes?.length || 0);
+      
+      // ID'lerin number olduğundan emin ol
+      const processedNotes = notes?.map(note => ({
+        ...note,
+        id: typeof note.id === 'string' ? parseInt(note.id) : note.id,
+        createdBy: typeof note.created_by === 'string' ? parseInt(note.created_by) : note.created_by,
+        updatedBy: typeof note.updated_by === 'string' ? parseInt(note.updated_by) : note.updated_by,
+        createdAt: new Date(note.created_at),
+        updatedAt: new Date(note.updated_at)
+      })) || [];
+      
       return NextResponse.json({
-        notes,
+        notes: processedNotes,
         categories: NOTE_CATEGORIES
       });
     } catch (dbError) {
@@ -122,7 +133,18 @@ export async function POST(request: NextRequest) {
       });
       
       console.log('✅ Supabase not oluştu:', supabaseNote);
-      return NextResponse.json(supabaseNote, { status: 201 });
+      
+      // Response'u process et
+      const processedNote = {
+        ...supabaseNote,
+        id: typeof supabaseNote.id === 'string' ? parseInt(supabaseNote.id) : supabaseNote.id,
+        createdBy: typeof supabaseNote.created_by === 'string' ? parseInt(supabaseNote.created_by) : supabaseNote.created_by,
+        updatedBy: typeof supabaseNote.updated_by === 'string' ? parseInt(supabaseNote.updated_by) : supabaseNote.updated_by,
+        createdAt: new Date(supabaseNote.created_at),
+        updatedAt: new Date(supabaseNote.updated_at)
+      };
+      
+      return NextResponse.json(processedNote, { status: 201 });
     } catch (supabaseError) {
       console.error('❌ Supabase hatası:', supabaseError);
       
@@ -171,7 +193,15 @@ export async function PUT(request: NextRequest) {
     }
 
     const noteId = typeof id === 'string' ? parseInt(id) : id;
-    console.log('🔢 ID dönüşümü:', { original: id, converted: noteId });
+    console.log('🔢 ID dönüşümü:', { original: id, converted: noteId, type: typeof id });
+    
+    if (isNaN(noteId) || noteId <= 0) {
+      console.error('❌ Geçersiz ID:', { id, noteId });
+      return NextResponse.json(
+        { error: `Geçersiz not ID'si: ${id}` },
+        { status: 400 }
+      );
+    }
 
     try {
       const supabaseNote = await DatabaseService.updateNote(noteId, {
@@ -179,7 +209,18 @@ export async function PUT(request: NextRequest) {
         updated_by: updatedBy || 1
       });
       console.log('✅ Supabase not güncellendi:', supabaseNote);
-      return NextResponse.json(supabaseNote);
+      
+      // Response'u da process et
+      const processedNote = {
+        ...supabaseNote,
+        id: typeof supabaseNote.id === 'string' ? parseInt(supabaseNote.id) : supabaseNote.id,
+        createdBy: typeof supabaseNote.created_by === 'string' ? parseInt(supabaseNote.created_by) : supabaseNote.created_by,
+        updatedBy: typeof supabaseNote.updated_by === 'string' ? parseInt(supabaseNote.updated_by) : supabaseNote.updated_by,
+        createdAt: new Date(supabaseNote.created_at),
+        updatedAt: new Date(supabaseNote.updated_at)
+      };
+      
+      return NextResponse.json(processedNote);
     } catch (supabaseError) {
       console.error('❌ Supabase güncelleme hatası:', supabaseError);
       

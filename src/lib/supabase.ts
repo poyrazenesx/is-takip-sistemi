@@ -294,19 +294,30 @@ export class DatabaseService {
 
   // Not güncelle
   static async updateNote(id: number, updateData: Partial<DbNote>): Promise<DbNote> {
-    console.log('🔍 Supabase updateNote çağrıldı:', { id, updateData });
+    console.log('🔍 Supabase updateNote çağrıldı:', { id, updateData, idType: typeof id });
+    
+    // ID validasyonu
+    if (!id || isNaN(id) || id <= 0) {
+      console.error('❌ Geçersiz ID:', id);
+      throw new Error(`Geçersiz not ID'si: ${id}`);
+    }
     
     // Önce notun var olup olmadığını kontrol et
     const { data: existingNote, error: fetchError } = await supabaseAdmin
       .from('notes')
-      .select('id, title, content, category')
+      .select('id, title, content, category, is_active')
       .eq('id', id)
       .eq('is_active', true)
       .single();
     
-    if (fetchError || !existingNote) {
-      console.error('❌ Not bulunamadı:', { id, fetchError });
-      throw new Error('Not bulunamadı');
+    if (fetchError) {
+      console.error('❌ Not arama hatası:', { id, fetchError });
+      throw new Error(`Not arama hatası: ${fetchError.message}`);
+    }
+    
+    if (!existingNote) {
+      console.error('❌ Not bulunamadı:', { id, searchResult: existingNote });
+      throw new Error(`ID ${id} ile not bulunamadı`);
     }
     
     console.log('✅ Mevcut not bulundu:', existingNote);
