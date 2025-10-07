@@ -75,3 +75,26 @@ export interface NoteHistory {
   changeDescription: string;
   userName?: string;
 }
+
+export interface Hardware {
+  id: number;
+  device_type: string;
+  make_model: string;
+  serial_number: string;
+  asset_tag: string;
+  location: string;
+  department: string;
+  assigned_to: string;
+  status: string;
+  purchase_date: string;
+  warranty_expiry: string;
+  processor: string;
+  memory_gb: number;
+  storage_gb: number;
+  operating_system: string;
+  ip_address: string;
+  mac_address: string;
+  notes: string;
+  created_at?: Date;
+  updated_at?: Date;
+}
