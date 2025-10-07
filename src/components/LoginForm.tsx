@@ -42,7 +42,7 @@ export default function LoginForm() {
       <style jsx>{`
         .login-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 50%, #1a365d 100%);
+          background: linear-gradient(135deg, #1a202c 0%, #2d3748 50%, #4a5568 100%);
           position: relative;
           overflow: hidden;
           transition: all 0.5s ease;
@@ -73,7 +73,7 @@ export default function LoginForm() {
 
         
         .logo-container {
-          background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+          background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
           animation: float 3s ease-in-out infinite;
         }
         
@@ -124,8 +124,8 @@ export default function LoginForm() {
 
         
         .form-control:focus {
-          border-color: #1e3a5f !important;
-          box-shadow: 0 0 0 0.25rem rgba(30, 58, 95, 0.25) !important;
+          border-color: #1a202c !important;
+          box-shadow: 0 0 0 0.25rem rgba(26, 32, 44, 0.25) !important;
           background: white !important;
           color: #495057 !important;
           outline: none !important;

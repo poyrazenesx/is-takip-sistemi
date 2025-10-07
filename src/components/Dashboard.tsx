@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User } from '@/types';
-import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText } from 'lucide-react';
+import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X } from 'lucide-react';
 import Notes from '@/components/Notes';
 
 interface DashboardProps {
@@ -20,6 +20,21 @@ export default function Dashboard({ users }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<'tasks' | 'notes'>('tasks');
   const [searchTerm, setSearchTerm] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+  
+  // Notification system
+  const [notifications, setNotifications] = useState<Array<{
+    id: number;
+    message: string;
+    type: 'success' | 'error' | 'warning';
+  }>>([]);
+  
+  // Bell Notification System
+  const [bellNotifications, setBellNotifications] = useState<{id: number; message: string; type: 'create' | 'delete' | 'update'; timestamp: Date}[]>([]);
+  const [showBellDropdown, setShowBellDropdown] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  
+  // Hover navbar
+  const [showNavbar, setShowNavbar] = useState(false);
 
   // Form verileri
   const [taskForm, setTaskForm] = useState({
@@ -34,6 +49,24 @@ export default function Dashboard({ users }: DashboardProps) {
     fetchTasks();
     fetchNotes();
   }, []);
+
+  // Bell dropdown dışına tıklandığında kapat
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const bellContainer = document.querySelector('.bell-container');
+      if (bellContainer && !bellContainer.contains(event.target as Node)) {
+        setShowBellDropdown(false);
+      }
+    };
+
+    if (showBellDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showBellDropdown]);
 
   const fetchTasks = async () => {
     try {
@@ -59,6 +92,39 @@ export default function Dashboard({ users }: DashboardProps) {
     } catch (error) {
       console.error('Notlar alınamadı:', error);
     }
+  };
+
+  // Notification system
+  const addNotification = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
+    const id = Date.now();
+    setNotifications(prev => [...prev, { id, message, type }]);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(notif => notif.id !== id));
+    }, 3000);
+  };
+
+  // Bell Notification Functions
+  const addBellNotification = (message: string, type: 'create' | 'delete' | 'update') => {
+    const id = Date.now();
+    const newNotification = { id, message, type, timestamp: new Date() };
+    setBellNotifications(prev => [newNotification, ...prev]);
+    setUnreadCount(prev => prev + 1);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      setBellNotifications(prev => prev.filter(notif => notif.id !== id));
+    }, 5000);
+  };
+
+  const markAsRead = () => {
+    setUnreadCount(0);
+  };
+
+  const clearAllNotifications = () => {
+    setBellNotifications([]);
+    setUnreadCount(0);
   };
 
   const handleTaskSubmit = async (e: React.FormEvent) => {
@@ -87,7 +153,7 @@ export default function Dashboard({ users }: DashboardProps) {
         } else {
           const errorData = await response.text();
           console.error('Güncelleme hatası:', errorData);
-          alert('Görev güncellenemedi: ' + errorData);
+          addNotification('Görev güncellenemedi: ' + errorData, 'error');
         }
       } else {
         // Yeni görev
@@ -108,19 +174,20 @@ export default function Dashboard({ users }: DashboardProps) {
         console.log('POST response status:', response.status);
         if (response.ok) {
           console.log('Yeni görev başarıyla oluşturuldu');
-          fetchTasks();
+          await fetchTasks();
           resetForm();
-          alert('✅ Görev başarıyla oluşturuldu!');
+          addNotification('Görev başarıyla oluşturuldu!', 'success');
+          addBellNotification(`"${taskForm.title}" görevi oluşturuldu`, 'create');
         } else {
           const errorData = await response.text();
           console.error('POST hatası:', errorData);
-          alert('❌ Görev oluşturulamadı: ' + errorData);
+          addNotification('Görev oluşturulamadı: ' + errorData, 'error');
         }
       }
     } catch (error) {
       console.error('Görev kaydet hatası:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      alert('❌ Bağlantı hatası: ' + errorMessage);
+      addNotification('Bağlantı hatası: ' + errorMessage, 'error');
     }
   };
 
@@ -132,10 +199,15 @@ export default function Dashboard({ users }: DashboardProps) {
         });
 
         if (response.ok) {
-          fetchTasks();
+          await fetchTasks();
+          addNotification('Görev başarıyla silindi!', 'success');
+          addBellNotification('Bir görev silindi', 'delete');
+        } else {
+          addNotification('Görev silinirken hata oluştu', 'error');
         }
       } catch (error) {
         console.error('Görev sil hatası:', error);
+        addNotification('Silme işlemi sırasında hata oluştu', 'error');
       }
     }
   };
@@ -234,7 +306,7 @@ export default function Dashboard({ users }: DashboardProps) {
         />
         <div style={{
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
@@ -255,12 +327,283 @@ export default function Dashboard({ users }: DashboardProps) {
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" 
         crossOrigin="anonymous"
       />
+      <link 
+        href="https://fonts.googleapis.com/css2?family=Alumni+Sans:ital,wght@0,100..900;1,100..900&display=swap" 
+        rel="stylesheet" 
+      />
       
       <style jsx>{`
+        * {
+          font-family: 'Alumni Sans', sans-serif !important;
+        }
+        
         .dashboard-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+          background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
           transition: all 0.5s ease;
+        }
+        
+        /* Hover Navbar */
+        .hover-navbar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          background: rgba(26, 32, 44, 0.95);
+          backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          transform: translateY(-100%);
+          transition: transform 0.3s ease;
+          z-index: 1000;
+          padding: 10px 0;
+        }
+        
+        .hover-navbar.show {
+          transform: translateY(0);
+        }
+        
+        .hover-navbar .nav-links {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 30px;
+        }
+        
+        .hover-navbar .nav-link {
+          color: white;
+          text-decoration: none;
+          padding: 8px 16px;
+          border-radius: 8px;
+          transition: background 0.2s ease;
+          font-weight: 500;
+        }
+        
+        .hover-navbar .nav-link:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
+        }
+        
+        .hover-trigger {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 30px;
+          z-index: 999;
+          background: transparent;
+        }
+
+        /* Notification System */
+        .notifications-container {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        
+        .notification {
+          min-width: 300px;
+          padding: 16px 20px;
+          border-radius: 12px;
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          color: white;
+          font-weight: 500;
+          animation: slideInRight 0.3s ease-out;
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .notification.success {
+          background: linear-gradient(135deg, rgba(72, 187, 120, 0.9), rgba(56, 178, 172, 0.9));
+        }
+        
+        .notification.error {
+          background: linear-gradient(135deg, rgba(245, 101, 101, 0.9), rgba(237, 100, 166, 0.9));
+        }
+        
+        .notification.warning {
+          background: linear-gradient(135deg, rgba(246, 173, 85, 0.9), rgba(255, 183, 77, 0.9));
+        }
+        
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+
+        /* Bell Notification System */
+        .bell-container {
+          position: fixed;
+          top: 70px;
+          right: 20px;
+          z-index: 1000;
+        }
+
+        .bell-button {
+          position: relative;
+          background: rgba(26, 32, 44, 0.9);
+          backdrop-filter: blur(10px);
+          border: none;
+          border-radius: 50%;
+          width: 48px;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          box-shadow: 0 4px 12px rgba(26, 32, 44, 0.3);
+          transition: all 0.3s ease;
+          cursor: pointer;
+        }
+
+        .bell-button:hover {
+          background: rgba(26, 32, 44, 1);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(26, 32, 44, 0.4);
+        }
+
+        .bell-badge {
+          position: absolute;
+          top: -4px;
+          right: -4px;
+          background: #e53e3e;
+          color: white;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 11px;
+          font-weight: 600;
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+          100% { transform: scale(1); }
+        }
+
+        .bell-dropdown {
+          position: absolute;
+          top: 60px;
+          right: 0;
+          width: 320px;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          border-radius: 12px;
+          border: 1px solid rgba(226, 232, 240, 0.8);
+          box-shadow: 0 8px 25px rgba(26, 32, 44, 0.15);
+          max-height: 400px;
+          overflow: hidden;
+          animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+          from { transform: translateY(-10px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+
+        .bell-header {
+          padding: 16px;
+          border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .bell-header h6 {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 600;
+          color: #1a202c;
+        }
+
+        .clear-btn {
+          background: none;
+          border: none;
+          color: #718096;
+          font-size: 12px;
+          cursor: pointer;
+          padding: 4px 8px;
+          border-radius: 4px;
+          transition: background 0.2s ease;
+        }
+
+        .clear-btn:hover {
+          background: rgba(226, 232, 240, 0.5);
+        }
+
+        .bell-content {
+          max-height: 300px;
+          overflow-y: auto;
+        }
+
+        .notification-item {
+          padding: 12px 16px;
+          border-bottom: 1px solid rgba(226, 232, 240, 0.3);
+          transition: background 0.2s ease;
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+        }
+
+        .notification-item:hover {
+          background: rgba(248, 250, 252, 0.8);
+        }
+
+        .notification-icon {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+
+        .notification-icon.create {
+          background: rgba(72, 187, 120, 0.1);
+          color: #48bb78;
+        }
+
+        .notification-icon.update {
+          background: rgba(66, 153, 225, 0.1);
+          color: #4299e1;
+        }
+
+        .notification-icon.delete {
+          background: rgba(245, 101, 101, 0.1);
+          color: #f56565;
+        }
+
+        .notification-content {
+          flex: 1;
+        }
+
+        .notification-message {
+          font-size: 13px;
+          font-weight: 500;
+          color: #2d3748;
+          margin: 0 0 2px 0;
+          line-height: 1.4;
+        }
+
+        .notification-time {
+          font-size: 11px;
+          color: #718096;
+          margin: 0;
         }
         
         .dashboard-container.dark-theme {
@@ -282,7 +625,7 @@ export default function Dashboard({ users }: DashboardProps) {
         }
         
         .gradient-btn {
-          background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+          background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
           border: none;
           border-radius: 15px;
           padding: 12px 25px;
@@ -292,7 +635,7 @@ export default function Dashboard({ users }: DashboardProps) {
         
         .gradient-btn:hover {
           transform: translateY(-2px);
-          box-shadow: 0 10px 30px rgba(30, 58, 95, 0.4);
+          box-shadow: 0 10px 30px rgba(26, 32, 44, 0.4);
         }
         
         .logout-btn {
@@ -353,7 +696,7 @@ export default function Dashboard({ users }: DashboardProps) {
         }
         
         .table-header {
-          background: linear-gradient(135deg, #f8f9fa 0%, rgba(102, 126, 234, 0.05) 100%);
+          background: linear-gradient(135deg, #f7fafc 0%, rgba(26, 32, 44, 0.05) 100%);
           padding: 20px 30px;
           border-bottom: 1px solid rgba(255, 255, 255, 0.3);
         }
@@ -412,8 +755,8 @@ export default function Dashboard({ users }: DashboardProps) {
         }
         
         .form-control:focus {
-          border-color: #667eea;
-          box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+          border-color: #2d3748;
+          box-shadow: 0 0 0 0.25rem rgba(45, 55, 72, 0.25);
           background: white;
           outline: none;
         }
@@ -428,14 +771,14 @@ export default function Dashboard({ users }: DashboardProps) {
         }
         
         .form-select:focus {
-          border-color: #667eea;
-          box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+          border-color: #2d3748;
+          box-shadow: 0 0 0 0.25rem rgba(45, 55, 72, 0.25);
           background: white;
           outline: none;
         }
         
         .gradient-text {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -458,12 +801,12 @@ export default function Dashboard({ users }: DashboardProps) {
         }
         
         .edit-btn {
-          background: rgba(102, 126, 234, 0.1);
-          color: #667eea;
+          background: rgba(45, 55, 72, 0.1);
+          color: #2d3748;
         }
         
         .edit-btn:hover {
-          background: rgba(102, 126, 234, 0.2);
+          background: rgba(45, 55, 72, 0.2);
         }
         
         .delete-btn {
@@ -479,7 +822,7 @@ export default function Dashboard({ users }: DashboardProps) {
           width: 40px;
           height: 40px;
           border-radius: 12px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -491,7 +834,104 @@ export default function Dashboard({ users }: DashboardProps) {
 
       `}</style>
       
+      {/* Hover Trigger Area */}
+      <div 
+        className="hover-trigger"
+        onMouseEnter={() => setShowNavbar(true)}
+        onMouseLeave={() => setShowNavbar(false)}
+      />
+      
+      {/* Hover Navbar */}
+      <nav 
+        className={`hover-navbar ${showNavbar ? 'show' : ''}`}
+        onMouseEnter={() => setShowNavbar(true)}
+        onMouseLeave={() => setShowNavbar(false)}
+      >
+        <div className="container">
+          <div className="nav-links">
+            <a href="#" className="nav-link">📊 Dashboard</a>
+            <a href="#" className="nav-link">📝 Notlar</a>
+            <a href="#" className="nav-link">✅ Görevler</a>
+            <a href="#" className="nav-link">📈 Raporlar</a>
+            <a href="#" className="nav-link">⚙️ Ayarlar</a>
+            <a href="#" className="nav-link">👥 Kullanıcılar</a>
+          </div>
+        </div>
+      </nav>
+
+      {/* Bell Notification System */}
+      <div className="bell-container">
+        <button 
+          className="bell-button"
+          onClick={() => {
+            setShowBellDropdown(!showBellDropdown);
+            if (!showBellDropdown) markAsRead();
+          }}
+        >
+          <Bell size={20} />
+          {unreadCount > 0 && (
+            <span className="bell-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+          )}
+        </button>
+
+        {showBellDropdown && (
+          <div className="bell-dropdown">
+            <div className="bell-header">
+              <h6>Bildirimler</h6>
+              <button 
+                className="clear-btn"
+                onClick={clearAllNotifications}
+              >
+                Temizle
+              </button>
+            </div>
+            <div className="bell-content">
+              {bellNotifications.length === 0 ? (
+                <div className="notification-item" style={{textAlign: 'center', color: '#718096'}}>
+                  Henüz bildirim yok
+                </div>
+              ) : (
+                bellNotifications.map(notif => (
+                  <div key={notif.id} className="notification-item">
+                    <div className={`notification-icon ${notif.type}`}>
+                      {notif.type === 'create' ? '➕' : notif.type === 'update' ? '✏️' : '🗑️'}
+                    </div>
+                    <div className="notification-content">
+                      <p className="notification-message">{notif.message}</p>
+                      <p className="notification-time">
+                        {notif.timestamp.toLocaleTimeString('tr-TR', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Notification System */}
+      <div className="notifications-container">
+        {notifications.map(notification => (
+          <div key={notification.id} className={`notification ${notification.type}`}>
+            {notification.message}
+          </div>
+        ))}
+      </div>
+      
       <div className={`dashboard-container ${darkMode ? 'dark-theme' : ''}`}>
+        {/* Notifications */}
+        <div className="notifications-container">
+          {notifications.map((notification) => (
+            <div key={notification.id} className={`notification ${notification.type}`}>
+              {notification.message}
+            </div>
+          ))}
+        </div>
+        
         {/* Header */}
         <header className="header-card">
           <div className="container">
@@ -499,7 +939,7 @@ export default function Dashboard({ users }: DashboardProps) {
               <div className="col-md-6">
                 <h1 className="gradient-text fw-bold fs-2 mb-2">İş Takip Sistemi</h1>
                 <h5 className="text-muted mb-0">
-                  Hoş geldin, <span className="fw-bold" style={{color: '#667eea'}}>{user?.name}</span> 👋
+                  Hoş geldin, <span className="fw-bold" style={{color: '#1a202c'}}>{user?.name}</span> 👋
                 </h5>
                 <p className="text-muted small mb-0">Hastane Bilgi İşlem Sistemi</p>
               </div>
@@ -519,22 +959,7 @@ export default function Dashboard({ users }: DashboardProps) {
                   <Plus className="me-2" size={18} />
                   Yeni Görev
                 </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      const response = await fetch('/api/test-db');
-                      const result = await response.json();
-                      console.log('Database Test Result:', result);
-                      alert('Test sonucu konsola yazdırıldı. F12 ile Developer Tools açın.');
-                    } catch (error) {
-                      console.error('Test error:', error);
-                    }
-                  }}
-                  className="btn btn-info text-white me-2"
-                  style={{ background: 'linear-gradient(135deg, #17a2b8 0%, #138496 100%)', border: 'none' }}
-                >
-                  🔍 DB Test
-                </button>
+
                 <button
                   onClick={logout}
                   className="btn logout-btn text-white"
@@ -555,7 +980,7 @@ export default function Dashboard({ users }: DashboardProps) {
               <div className="glass-card rounded-4 p-3">
                 <div className="d-flex align-items-center justify-content-center gap-4">
                   <div className="d-flex align-items-center gap-2">
-                    <div className="stat-icon-small" style={{background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}}>
+                    <div className="stat-icon-small" style={{background: 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)'}}>
                       <FileText className="text-white" size={16} />
                     </div>
                     <span className="fw-bold text-dark">{notes.length} Not</span>
@@ -623,7 +1048,7 @@ export default function Dashboard({ users }: DashboardProps) {
                         className={`nav-link ${activeTab === 'tasks' ? 'active' : ''}`}
                         onClick={() => setActiveTab('tasks')}
                         style={{
-                          background: activeTab === 'tasks' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
+                          background: activeTab === 'tasks' ? 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)' : 'transparent',
                           border: 'none',
                           color: activeTab === 'tasks' ? 'white' : '#666'
                         }}
@@ -636,7 +1061,7 @@ export default function Dashboard({ users }: DashboardProps) {
                         className={`nav-link ${activeTab === 'notes' ? 'active' : ''}`}
                         onClick={() => setActiveTab('notes')}
                         style={{
-                          background: activeTab === 'notes' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
+                          background: activeTab === 'notes' ? 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)' : 'transparent',
                           border: 'none',
                           color: activeTab === 'notes' ? 'white' : '#666'
                         }}
@@ -800,7 +1225,7 @@ export default function Dashboard({ users }: DashboardProps) {
                       type="text"
                       required
                       value={taskForm.title}
-                      onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
+                      onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value.toUpperCase() })}
                       className="form-control form-control-lg"
                       placeholder="Görev başlığını girin..."
                     />
