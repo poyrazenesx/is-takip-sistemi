@@ -71,6 +71,8 @@ export async function GET(request: NextRequest) {
           updatedBy: typeof note.updated_by === 'string' ? parseInt(note.updated_by) : note.updated_by,
           createdAt: new Date(note.created_at),
           updatedAt: new Date(note.updated_at),
+          attachmentUrl: note.attachment_url, // Database field mapping
+          attachmentName: note.attachment_name, // Database field mapping
           attachments: attachments // Attachments ekle
         };
       }));
