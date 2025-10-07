@@ -27,9 +27,16 @@ interface Hardware {
 export default function DonanımPage() {
   const router = useRouter()
   const [hardwareList, setHardwareList] = useState<Hardware[]>([])
+  const [filteredList, setFilteredList] = useState<Hardware[]>([])
   const [showAddModal, setShowAddModal] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('')
+  const [departmentFilter, setDepartmentFilter] = useState('')
+  const [deviceTypeFilter, setDeviceTypeFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
   
   // Form state
   const [formData, setFormData] = useState({
@@ -50,7 +57,42 @@ export default function DonanımPage() {
     serviceReturnDate: ''
   })
 
-  // Verileri yükle
+
+
+  // Sayfa yüklendiğinde verileri getir
+  useEffect(() => {
+    loadHardware()
+  }, [])
+
+  // Filtreleme işlevi
+  useEffect(() => {
+    let filtered = hardwareList
+
+    if (searchTerm) {
+      filtered = filtered.filter(hardware => 
+        hardware.tag_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        hardware.fault_description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        hardware.work_done?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        hardware.assigned_person.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    if (departmentFilter) {
+      filtered = filtered.filter(hardware => hardware.department === departmentFilter)
+    }
+
+    if (deviceTypeFilter) {
+      filtered = filtered.filter(hardware => hardware.device_type === deviceTypeFilter)
+    }
+
+    if (statusFilter) {
+      filtered = filtered.filter(hardware => hardware.status === statusFilter)
+    }
+
+    setFilteredList(filtered)
+  }, [hardwareList, searchTerm, departmentFilter, deviceTypeFilter, statusFilter])
+
+  // Verileri yükledikten sonra filtrelenmiş listeyi de güncelle
   const loadHardware = async () => {
     try {
       setIsLoading(true)
@@ -58,6 +100,7 @@ export default function DonanımPage() {
       if (response.ok) {
         const result = await response.json()
         setHardwareList(result.data || [])
+        setFilteredList(result.data || [])
       }
     } catch (error) {
       console.error('Donanım verileri yüklenemedi:', error)
@@ -65,11 +108,6 @@ export default function DonanımPage() {
       setIsLoading(false)
     }
   }
-
-  // Sayfa yüklendiğinde verileri getir
-  useEffect(() => {
-    loadHardware()
-  }, [])
 
   // Yeni kayıt kaydet
   const handleSave = async () => {
@@ -112,6 +150,33 @@ export default function DonanımPage() {
       alert('Kayıt sırasında hata oluştu!')
     } finally {
       setSaving(false)
+    }
+  }
+
+  // Düzenle işlemi
+  const handleEdit = (id: string) => {
+    // TODO: Edit modalını aç ve formu doldur
+    alert(`Düzenle işlemi: ${id}`)
+  }
+
+  // Silme işlemi
+  const handleDelete = async (id: string) => {
+    if (confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+      try {
+        const response = await fetch(`/api/hardware/${id}`, {
+          method: 'DELETE',
+        })
+        
+        if (response.ok) {
+          await loadHardware() // Listeyi yenile
+          alert('Kayıt başarıyla silindi!')
+        } else {
+          alert('Silme işlemi sırasında hata oluştu!')
+        }
+      } catch (error) {
+        console.error('Silme hatası:', error)
+        alert('Silme işlemi sırasında hata oluştu!')
+      }
     }
   }
 
@@ -328,7 +393,7 @@ export default function DonanımPage() {
                   TAMAMLANAN İŞLER
                 </p>
                 <p className="text-3xl font-bold text-green-600 mt-1" style={{fontFamily: 'Alumni Sans, sans-serif'}}>
-                  {hardwareList.filter(h => h.status === 'Tamamlandı').length}
+                  {filteredList.filter(h => h.status === 'Tamamlandı').length}
                 </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
@@ -344,7 +409,7 @@ export default function DonanımPage() {
                   SERVİSTE
                 </p>
                 <p className="text-3xl font-bold text-yellow-600 mt-1" style={{fontFamily: 'Alumni Sans, sans-serif'}}>
-                  {hardwareList.filter(h => h.status === 'Serviste').length}
+                  {filteredList.filter(h => h.status === 'Serviste').length}
                 </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center">
@@ -360,7 +425,7 @@ export default function DonanımPage() {
                   DEVAM EDİYOR
                 </p>
                 <p className="text-3xl font-bold text-red-600 mt-1" style={{fontFamily: 'Alumni Sans, sans-serif'}}>
-                  {hardwareList.filter(h => h.status === 'Devam Ediyor').length}
+                  {filteredList.filter(h => h.status === 'Devam Ediyor').length}
                 </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center">
@@ -377,70 +442,213 @@ export default function DonanımPage() {
               🖥️ DONANIM LİSTESİ
             </h2>
           </div>
+
+          {/* Search and Filter Section */}
+          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Genel Arama */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}>
+                  🔍 Genel Arama
+                </label>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Etiket No, IP, Açıklama..."
+                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors"
+                  style={{fontFamily: 'Alumni Sans, sans-serif'}}
+                />
+              </div>
+              
+              {/* Departman Filtresi */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}>
+                  🏢 Departman
+                </label>
+                <select 
+                  value={departmentFilter}
+                  onChange={(e) => setDepartmentFilter(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors" 
+                  style={{fontFamily: 'Alumni Sans, sans-serif'}}
+                >
+                  <option value="">Tümü</option>
+                  <option>BİLGİ İŞLEM</option>
+                  <option>HASTA KAYIT</option>
+                  <option>MUHASEBE</option>
+                  <option>İNSAN KAYNAKLARI</option>
+                  <option>SAĞLIK HİZMETLERİ</option>
+                  <option>LABORATUVAR</option>
+                </select>
+              </div>
+
+              {/* Cihaz Türü Filtresi */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}>
+                  💻 Cihaz Türü
+                </label>
+                <select 
+                  value={deviceTypeFilter}
+                  onChange={(e) => setDeviceTypeFilter(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors" 
+                  style={{fontFamily: 'Alumni Sans, sans-serif'}}
+                >
+                  <option value="">Tümü</option>
+                  <option>Masaüstü Bilgisayar</option>
+                  <option>Laptop</option>
+                  <option>Yazıcı</option>
+                  <option>Sunucu</option>
+                  <option>Network Cihazı</option>
+                  <option>Monitör</option>
+                </select>
+              </div>
+
+              {/* Durum Filtresi */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}>
+                  📊 Durum
+                </label>
+                <select 
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors" 
+                  style={{fontFamily: 'Alumni Sans, sans-serif'}}
+                >
+                  <option value="">Tümü</option>
+                  <option>Tamamlandı</option>
+                  <option>Devam Ediyor</option>
+                  <option>Serviste</option>
+                  <option>İptal</option>
+                </select>
+              </div>
+            </div>
+          </div>
           
           <div className="overflow-x-auto">
             <table className="min-w-full table-modern">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tarih
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Cihaz Türü
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Etiket No
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Departman
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Teknisyen
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Arıza Açıklaması
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Yapılan İşlem
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Süre (dk)
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Durum
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     İşlemler
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {hardwareList.map((hardware) => (
+                {filteredList.map((hardware) => (
                   <tr key={hardware.id} className="hover:bg-gray-50 transition-colors duration-200">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-3">
+                    {/* Tarih */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 font-medium">
+                        {new Date(hardware.date).toLocaleDateString('tr-TR')}
+                      </div>
+                    </td>
+                    
+                    {/* Cihaz Türü */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex items-center space-x-2">
                         <div className="flex-shrink-0 text-slate-600">
                           {getHardwareIcon(hardware.device_type)}
                         </div>
-                        <div>
-                          <div className="text-sm font-medium text-slate-800">
-                            {hardware.device_type}
-                          </div>
+                        <div className="text-sm font-medium text-slate-800">
+                          {hardware.device_type}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-600">{hardware.tag_number}</div>
+
+                    {/* Etiket No */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="text-sm text-gray-600 font-mono">
+                        {hardware.tag_number}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+
+                    {/* Departman */}
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <div className="text-sm text-gray-600">{hardware.department}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+
+                    {/* Teknisyen */}
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <div className="text-sm text-gray-600">{hardware.assigned_person}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-3 py-2 text-sm font-bold rounded-full ${
-                        hardware.status === 'Tamamlandı' ? 'status-tamamlandı' : 
-                        hardware.status === 'Serviste' ? 'status-serviste' : 'status-devam-ediyor'
-                      }`} style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase', letterSpacing: '0.5px'}}>
+
+                    {/* Arıza Açıklaması */}
+                    <td className="px-4 py-3 max-w-xs">
+                      <div className="text-sm text-gray-600 truncate" title={hardware.fault_description}>
+                        {hardware.fault_description || '-'}
+                      </div>
+                    </td>
+
+                    {/* Yapılan İşlem */}
+                    <td className="px-4 py-3 max-w-xs">
+                      <div className="text-sm text-gray-600 truncate" title={hardware.work_done}>
+                        {hardware.work_done || '-'}
+                      </div>
+                    </td>
+
+                    {/* Süre */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="text-sm text-gray-600">
+                        {hardware.duration} dk
+                      </div>
+                    </td>
+
+                    {/* Durum */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${
+                        hardware.status === 'Tamamlandı' ? 'bg-green-100 text-green-800' : 
+                        hardware.status === 'Serviste' ? 'bg-yellow-100 text-yellow-800' : 
+                        hardware.status === 'Devam Ediyor' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                      }`} style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}>
                         {hardware.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg mr-3 transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:transform hover:scale-105" style={{fontFamily: 'Alumni Sans, sans-serif', fontWeight: '600'}}>
-                        ✏️ Düzenle
-                      </button>
-                      <button className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg transition-all duration-200 hover:from-red-600 hover:to-red-700 hover:transform hover:scale-105" style={{fontFamily: 'Alumni Sans, sans-serif', fontWeight: '600'}}>
-                        🗑️ Sil
-                      </button>
+
+                    {/* İşlemler */}
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => handleEdit(hardware.id)}
+                          className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-lg transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:transform hover:scale-105 text-xs"
+                          style={{fontFamily: 'Alumni Sans, sans-serif', fontWeight: '600'}}
+                        >
+                          ✏️ Düzenle
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(hardware.id)}
+                          className="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-lg transition-all duration-200 hover:from-red-600 hover:to-red-700 hover:transform hover:scale-105 text-xs"
+                          style={{fontFamily: 'Alumni Sans, sans-serif', fontWeight: '600'}}
+                        >
+                          🗑️ Sil
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -37,6 +37,28 @@ button, .btn {
   padding: 12px 24px !important;
 }
 
+/* Small button adjustments for Notes */
+.btn-sm {
+  font-size: 0.9rem !important;
+  padding: 8px 12px !important;
+  min-width: 40px !important;
+  min-height: 36px !important;
+}
+
+/* Action buttons in note cards */
+.action-buttons .btn-sm {
+  padding: 6px 10px !important;
+  font-size: 0.85rem !important;
+  min-width: 35px !important;
+  min-height: 32px !important;
+}
+
+/* Icon adjustments */
+.action-buttons .btn-sm:hover {
+  transform: scale(1.05) !important;
+  transition: transform 0.2s ease !important;
+}
+
 /* Input text sizes */
 input, textarea, select {
   font-size: 1.1rem !important;
