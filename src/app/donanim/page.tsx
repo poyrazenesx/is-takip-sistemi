@@ -482,40 +482,40 @@ export default function DonanımPage() {
 
     {/* Add Hardware Modal */}
     {showAddModal && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto shadow-2xl">
           {/* Modal Header */}
-          <div className="sticky top-0 bg-gradient-to-r from-slate-700 to-slate-800 text-white p-6 rounded-t-2xl flex justify-between items-center">
-            <h2 className="text-2xl font-bold" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}>
+          <div className="sticky top-0 bg-gradient-to-r from-slate-700 to-slate-800 text-white p-8 rounded-t-2xl flex justify-between items-center">
+            <h2 className="text-3xl font-bold" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase', fontSize: '2.2rem'}}>
               🔧 YENİ DONANIM KAYDI
             </h2>
             <button
               onClick={() => setShowAddModal(false)}
-              className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-2 transition-all duration-200"
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-3 transition-all duration-200"
             >
-              <X className="w-6 h-6" />
+              <X className="w-7 h-7" />
             </button>
           </div>
 
           {/* Modal Body */}
-          <div className="p-6">
-            <form className="space-y-6">
+          <div className="p-8">
+            <form className="space-y-8">
               {/* İlk Satır: Tarih, Yapan Kişi, Bölüm */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}>
+                  <label className="block text-base font-bold text-gray-700 mb-3" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase', fontSize: '1.1rem'}}>
                     📅 Tarih
                   </label>
                   <input
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData(prev => ({...prev, date: e.target.value}))}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors"
-                    style={{fontFamily: 'Alumni Sans, sans-serif'}}
+                    className="w-full px-5 py-4 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors text-lg"
+                    style={{fontFamily: 'Alumni Sans, sans-serif', fontSize: '1.1rem'}}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}>
+                  <label className="block text-base font-bold text-gray-700 mb-3" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase', fontSize: '1.1rem'}}>
                     👤 Yapan Kişi
                   </label>
                   <input
@@ -523,19 +523,19 @@ export default function DonanımPage() {
                     value={formData.assignedPerson}
                     onChange={(e) => setFormData(prev => ({...prev, assignedPerson: e.target.value}))}
                     placeholder="Teknisyen adı..."
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors"
-                    style={{fontFamily: 'Alumni Sans, sans-serif'}}
+                    className="w-full px-5 py-4 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors text-lg"
+                    style={{fontFamily: 'Alumni Sans, sans-serif', fontSize: '1.1rem'}}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}>
+                  <label className="block text-base font-bold text-gray-700 mb-3" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase', fontSize: '1.1rem'}}>
                     🏢 Bölüm
                   </label>
                   <select
                     value={formData.department}
                     onChange={(e) => setFormData(prev => ({...prev, department: e.target.value}))}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors"
-                    style={{fontFamily: 'Alumni Sans, sans-serif'}}
+                    className="w-full px-5 py-4 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors text-lg"
+                    style={{fontFamily: 'Alumni Sans, sans-serif', fontSize: '1.1rem'}}
                   >
                     <option>BİLGİ İŞLEM</option>
                     <option>HASTA KAYIT</option>
@@ -548,7 +548,7 @@ export default function DonanımPage() {
               </div>
 
               {/* İkinci Satır: Servis, Cihaz Türü, Etiket No */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}>
                     🔧 Servis
@@ -602,31 +602,31 @@ export default function DonanımPage() {
 
               {/* Arıza Açıklaması */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}>
+                <label className="block text-base font-bold text-gray-700 mb-3" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase', fontSize: '1.1rem'}}>
                   ⚠️ Arıza Açıklaması
                 </label>
                 <textarea
                   value={formData.faultDescription}
                   onChange={(e) => setFormData(prev => ({...prev, faultDescription: e.target.value}))}
                   placeholder="Karşılaşılan problem ve belirti detayları..."
-                  rows={3}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors resize-none"
-                  style={{fontFamily: 'Alumni Sans, sans-serif'}}
+                  rows={4}
+                  className="w-full px-5 py-4 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors resize-none text-lg"
+                  style={{fontFamily: 'Alumni Sans, sans-serif', fontSize: '1.1rem'}}
                 />
               </div>
 
               {/* Yapılan İşlem */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}>
+                <label className="block text-base font-bold text-gray-700 mb-3" style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase', fontSize: '1.1rem'}}>
                   🔨 Yapılan İşlem
                 </label>
                 <textarea
                   value={formData.workDone}
                   onChange={(e) => setFormData(prev => ({...prev, workDone: e.target.value}))}
                   placeholder="Gerçekleştirilen onarım ve işlemler..."
-                  rows={3}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors resize-none"
-                  style={{fontFamily: 'Alumni Sans, sans-serif'}}
+                  rows={4}
+                  className="w-full px-5 py-4 border-2 border-gray-200 rounded-lg focus:border-slate-500 focus:ring-0 transition-colors resize-none text-lg"
+                  style={{fontFamily: 'Alumni Sans, sans-serif', fontSize: '1.1rem'}}
                 />
               </div>
 
@@ -734,19 +734,19 @@ export default function DonanımPage() {
           </div>
 
           {/* Modal Footer */}
-          <div className="sticky bottom-0 bg-gray-50 p-6 rounded-b-2xl flex justify-end space-x-4">
+          <div className="sticky bottom-0 bg-gray-50 p-8 rounded-b-2xl flex justify-end space-x-6">
             <button
               onClick={() => setShowAddModal(false)}
-              className="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-bold transition-colors"
-              style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}
+              className="px-8 py-4 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-bold transition-colors text-lg"
+              style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase', fontSize: '1.1rem'}}
             >
               ❌ İptal
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-bold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase'}}
+              className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-bold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+              style={{fontFamily: 'Alumni Sans, sans-serif', textTransform: 'uppercase', fontSize: '1.1rem'}}
             >
               {saving ? '⏳ Kaydediliyor...' : '✅ Kaydet'}
             </button>

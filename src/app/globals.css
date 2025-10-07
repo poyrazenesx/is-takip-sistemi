@@ -12,6 +12,45 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
+  font-size: 18px; /* Base font size artırıldı */
+}
+
+/* Global font size improvements */
+html {
+  font-size: 18px !important; /* Root font size artırıldı */
+}
+
+p, div, span, li {
+  font-size: 1.1rem !important; /* Metin boyutları artırıldı */
+}
+
+h1 { font-size: 2.5rem !important; }
+h2 { font-size: 2.2rem !important; }
+h3 { font-size: 1.9rem !important; }
+h4 { font-size: 1.6rem !important; }
+h5 { font-size: 1.4rem !important; }
+h6 { font-size: 1.2rem !important; }
+
+/* Button text sizes */
+button, .btn {
+  font-size: 1.1rem !important;
+  padding: 12px 24px !important;
+}
+
+/* Input text sizes */
+input, textarea, select {
+  font-size: 1.1rem !important;
+  padding: 14px 16px !important;
+}
+
+/* Table text sizes */
+table {
+  font-size: 1.05rem !important;
+}
+
+th, td {
+  font-size: 1.05rem !important;
+  padding: 16px 12px !important;
 }
 
 /* Dark Theme Variables */

@@ -182,9 +182,10 @@ export default function LoginForm() {
         
         .form-label {
           font-weight: 600;
-          color: #495057;
+          color: rgba(255,255,255,0.95) !important;
           margin-bottom: 10px;
           transition: color 0.3s ease;
+          font-size: 1.1rem !important;
         }
         
 
@@ -296,9 +297,9 @@ export default function LoginForm() {
                   <div className="logo-container d-inline-flex align-items-center justify-content-center rounded-4 p-3 mb-4">
                     <LogIn className="text-white" size={32} />
                   </div>
-                  <h2 className="gradient-text fw-bold mb-3">İş Takip Sistemi</h2>
-                  <h5 className="text-muted mb-2">Hastane Bilgi İşlem Sistemi</h5>
-                  <p className="text-muted small">BİLGİ İŞLEM BİRİMİ</p>
+                  <h2 className="fw-bold mb-3" style={{color: 'white', fontSize: '2.2rem', fontWeight: '700'}}>İş Takip Sistemi</h2>
+                  <h5 className="mb-2" style={{color: 'rgba(255,255,255,0.9)', fontSize: '1.4rem', fontWeight: '500'}}>Hastane Bilgi İşlem Sistemi</h5>
+                  <p className="small" style={{color: 'rgba(255,255,255,0.8)', fontSize: '1.1rem'}}>BİLGİ İŞLEM BİRİMİ</p>
                 </div>
 
                 {/* Giriş Formu */}
