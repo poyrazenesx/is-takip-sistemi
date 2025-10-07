@@ -10,7 +10,7 @@ export default function LoginForm() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,9 +48,7 @@ export default function LoginForm() {
           transition: all 0.5s ease;
         }
         
-        .login-container.dark {
-          background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-        }
+
         
         .login-container::before {
           content: '';
@@ -72,11 +70,7 @@ export default function LoginForm() {
           transition: all 0.5s ease;
         }
         
-        .login-container.dark .login-card {
-          background: rgba(15, 23, 42, 0.95) !important;
-          border: 1px solid rgba(71, 85, 105, 0.3);
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
-        }
+
         
         .logo-container {
           background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
@@ -109,11 +103,7 @@ export default function LoginForm() {
           appearance: none !important;
         }
         
-        .login-container.dark .form-control {
-          border: 2px solid #475569 !important;
-          background: #1e293b !important;
-          color: #f1f5f9 !important;
-        }
+
         
         .form-control[type="text"], 
         .form-control[type="password"] {
@@ -124,19 +114,14 @@ export default function LoginForm() {
           background-color: white !important;
         }
         
-        .login-container.dark .form-control[type="text"], 
-        .login-container.dark .form-control[type="password"] {
-          background-color: #1e293b !important;
-        }
+
         
         .form-control::placeholder {
           color: #6c757d !important;
           opacity: 0.7;
         }
         
-        .login-container.dark .form-control::placeholder {
-          color: #a0aec0 !important;
-        }
+
         
         .form-control:focus {
           border-color: #1e3a5f !important;
@@ -147,12 +132,7 @@ export default function LoginForm() {
           pointer-events: auto !important;
         }
         
-        .login-container.dark .form-control:focus {
-          border-color: #3b82f6 !important;
-          box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.4) !important;
-          background: #1e293b !important;
-          color: #f1f5f9 !important;
-        }
+
         
         .form-control:hover {
           background: white !important;
@@ -207,9 +187,7 @@ export default function LoginForm() {
           transition: color 0.3s ease;
         }
         
-        .login-container.dark .form-label {
-          color: #e2e8f0;
-        }
+
         
         .alert-custom {
           background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
@@ -261,12 +239,7 @@ export default function LoginForm() {
           color: #495057 !important;
         }
         
-        .login-container.dark input, 
-        .login-container.dark textarea, 
-        .login-container.dark select {
-          background: #1e293b !important;
-          color: #f1f5f9 !important;
-        }
+
         
         /* Input focus sorunlarını çöz */
         .login-card input:focus,
@@ -275,53 +248,20 @@ export default function LoginForm() {
           cursor: text !important;
         }
         
-        .theme-toggle {
-          position: absolute;
-          top: 20px;
-          right: 20px;
-          z-index: 1100;
-          background: white;
-          border: 2px solid #e9ecef;
-          border-radius: 50px;
-          padding: 10px 15px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          color: #495057;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .login-container.dark .theme-toggle {
-          background: #1e293b;
-          border: 2px solid #475569;
-          color: #e2e8f0;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .theme-toggle:hover {
-          transform: scale(1.05);
-          box-shadow: 0 6px 20px rgba(30, 58, 95, 0.2);
-        }
-        
-        .login-container.dark .theme-toggle:hover {
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-        }
+
         
         .card-title {
           color: #495057;
           transition: color 0.3s ease;
         }
         
-        .login-container.dark .card-title {
-          color: #e2e8f0;
-        }
+
         
         .text-muted {
           color: #6c757d !important;
         }
         
-        .login-container.dark .text-muted {
-          color: #a0aec0 !important;
-        }
+
           -moz-user-select: text !important;
           user-select: text !important;
           cursor: text !important;
@@ -345,25 +285,7 @@ export default function LoginForm() {
         }
       `}</style>
 
-      <div className={`login-container d-flex align-items-center justify-content-center ${darkMode ? 'dark' : ''}`}>
-        {/* Theme Toggle Button */}
-        <button 
-          className="theme-toggle d-flex align-items-center gap-2"
-          onClick={() => setDarkMode(!darkMode)}
-          title={darkMode ? 'Açık tema' : 'Koyu tema'}
-        >
-          {darkMode ? (
-            <>
-              <span>☀️</span>
-              <span>Açık</span>
-            </>
-          ) : (
-            <>
-              <span>🌙</span>
-              <span>Koyu</span>
-            </>
-          )}
-        </button>
+      <div className="login-container d-flex align-items-center justify-content-center">
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-md-6 col-lg-5">
