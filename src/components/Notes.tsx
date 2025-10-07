@@ -4,22 +4,19 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Note, NoteCategory, Attachment } from '@/types';
 import FileUpload from './FileUpload';
-import { Bell, X, Plus, Edit, Trash2 } from 'lucide-react';
 
 interface NotesProps {
   searchTerm?: string;
 }
 
-const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
+const Notes = ({ searchTerm = '' }: NotesProps) => {
   const { user } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [categories, setCategories] = useState<NoteCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [viewingNote, setViewingNote] = useState<Note | null>(null);
   const [noteForm, setNoteForm] = useState({
@@ -31,67 +28,7 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
   });
   const [noteAttachments, setNoteAttachments] = useState<Attachment[]>([]);
   const [showFileUpload, setShowFileUpload] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  
-  // Real-time Search States
-  const [searchResults, setSearchResults] = useState<Note[]>([]);
-  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  
-  // Notification States - Dashboard ile uyumlu hale getir
-  const [notifications, setNotifications] = useState<Array<{
-    id: number;
-    message: string;
-    type: 'success' | 'error' | 'warning';
-  }>>([]);
-  
-  // Delete Confirmation Modal
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [noteToDelete, setNoteToDelete] = useState<number | null>(null);
-
-  // Helper Functions
-  const getFileIcon = (fileName: string, fileType?: string): string => {
-    if (!fileName && !fileType) return '📄';
-    
-    const extension = fileName?.split('.').pop()?.toLowerCase() || '';
-    const type = fileType?.toLowerCase() || '';
-    
-    // Image files
-    if (type.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(extension)) {
-      return '🖼️';
-    }
-    // Document files  
-    if (['pdf'].includes(extension) || type === 'application/pdf') return '📕';
-    if (['doc', 'docx'].includes(extension) || type.includes('word')) return '📘';
-    if (['xls', 'xlsx'].includes(extension) || type.includes('sheet')) return '📗';
-    if (['ppt', 'pptx'].includes(extension) || type.includes('presentation')) return '📙';
-    // Text files
-    if (['txt'].includes(extension) || type === 'text/plain') return '📝';
-    // Archive files
-    if (['zip', 'rar', '7z', 'tar', 'gz'].includes(extension)) return '🗜️';
-    // Video files
-    if (type.startsWith('video/') || ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'].includes(extension)) {
-      return '🎬';
-    }
-    // Audio files
-    if (type.startsWith('audio/') || ['mp3', 'wav', 'flac', 'aac', 'ogg'].includes(extension)) {
-      return '🎵';
-    }
-    // Code files
-    if (['js', 'ts', 'jsx', 'tsx', 'html', 'css', 'php', 'py', 'java', 'cpp', 'c'].includes(extension)) {
-      return '💻';
-    }
-    
-    return '📄'; // Default file icon
-  };
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
 
   // Default kategoriler
   const defaultCategories: NoteCategory[] = [
@@ -131,26 +68,15 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
     }
   };
 
-  // Notification system - Dashboard ile uyumlu
-  const addNotification = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
-    const id = Date.now();
-    setNotifications(prev => [...prev, { id, message, type }]);
-    
-    // Auto remove after 3 seconds
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(notif => notif.id !== id));
-    }, 3000);
-  };
-
   const handleNoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    
     try {
       if (editingNote) {
-        // Not güncelle
+        // Güncelleme - attachments ile birlikte
+        console.log('Güncelleme yapılıyor:', editingNote.id, noteForm, 'Attachments:', noteAttachments);
+        
+        // Attachment bilgilerini güncelle
         const attachmentUrl = noteAttachments.length > 0 ? noteAttachments[0].filePath : noteForm.attachmentUrl;
         const attachmentName = noteAttachments.length > 0 ? noteAttachments[0].fileName : noteForm.attachmentName;
         
@@ -160,7 +86,6 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
           body: JSON.stringify({
             id: editingNote.id,
             ...noteForm,
-            title: noteForm.title.toUpperCase(), // Başlığı büyük harfe çevir
             attachmentUrl,
             attachmentName,
             updatedBy: user?.id || 1
@@ -169,9 +94,10 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
 
         if (response.ok) {
           const result = await response.json();
+          console.log('✅ Güncelleme başarılı:', result);
           fetchNotes();
           resetForm();
-          addNotification(`"${noteForm.title}" başarıyla güncellendi!`, 'success');
+          alert('✅ Not başarıyla güncellendi!');
         } else {
           let errorData;
           try {
@@ -179,37 +105,40 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
           } catch {
             errorData = { error: await response.text() };
           }
-          
-          addNotification('Not güncellenemedi. Lütfen tekrar deneyin.', 'error');
+          console.error('❌ Güncelleme hatası:', errorData);
+          alert('❌ Not güncellenemedi: ' + (errorData.error || 'Bilinmeyen hata'));
         }
       } else {
-        // Yeni not oluştur
+        // Yeni not - attachments ile birlikte
+        console.log('Yeni not oluşturuluyor:', noteForm, 'Attachments:', noteAttachments);
+        
+        // Attachment bilgilerini noteForm'a ekle
+        const attachmentUrl = noteAttachments.length > 0 ? noteAttachments[0].filePath : noteForm.attachmentUrl;
+        const attachmentName = noteAttachments.length > 0 ? noteAttachments[0].fileName : noteForm.attachmentName;
+        
         const response = await fetch('/api/notes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             ...noteForm,
-            title: noteForm.title.toUpperCase(), // Başlığı büyük harfe çevir
-            attachments: noteAttachments, // Tüm attachments'ları gönder
-            attachmentUrl: noteForm.attachmentUrl, // Eski system için backward compatibility
-            attachmentName: noteForm.attachmentName,
+            attachmentUrl,
+            attachmentName,
             createdBy: user?.id || 1
           }),
         });
 
         if (response.ok) {
-          await fetchNotes();
+          fetchNotes();
           resetForm();
-          addNotification('Not başarıyla oluşturuldu!', 'success');
+          alert('✅ Not başarıyla oluşturuldu!');
         } else {
           const errorData = await response.text();
-          addNotification('Not oluşturulamadı. Lütfen tekrar deneyin.', 'error');
+          alert('❌ Not oluşturulamadı: ' + errorData);
         }
       }
     } catch (error) {
-      addNotification('İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.', 'error');
-    } finally {
-      setIsSubmitting(false);
+      console.error('Note submit hatası:', error);
+      alert('❌ İşlem sırasında hata oluştu');
     }
   };
 
@@ -226,31 +155,23 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
   };
 
   const handleDeleteNote = async (noteId: number) => {
-    setNoteToDelete(noteId);
-    setShowDeleteModal(true);
-  };
+    if (window.confirm('Bu notu silmek istediğinizden emin misiniz?')) {
+      try {
+        const response = await fetch(`/api/notes?id=${noteId}`, {
+          method: 'DELETE',
+        });
 
-  const confirmDeleteNote = async () => {
-    if (!noteToDelete) return;
-    
-    try {
-      const response = await fetch(`/api/notes?id=${noteToDelete}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        await fetchNotes();
-        addNotification('Not başarıyla silindi!', 'success');
-      } else {
-        addNotification('Not silinirken hata oluştu', 'error');
+        if (response.ok) {
+          fetchNotes();
+          alert('✅ Not başarıyla silindi!');
+        } else {
+          alert('❌ Not silinirken hata oluştu');
+        }
+      } catch (error) {
+        console.error('Note delete hatası:', error);
+        alert('❌ Silme işlemi sırasında hata oluştu');
       }
-    } catch (error) {
-      console.error('Note delete hatası:', error);
-      addNotification('Silme işlemi sırasında hata oluştu', 'error');
     }
-    
-    setShowDeleteModal(false);
-    setNoteToDelete(null);
   };
 
   const resetForm = () => {
@@ -265,16 +186,10 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
     setShowModal(false);
     setNoteAttachments([]);
     setShowFileUpload(false);
-    setIsUploading(false);
-  };
-
-  const handleFileUploadStart = () => {
-    setIsUploading(true);
   };
 
   const handleFileUploadComplete = (attachments: Attachment[]) => {
     setNoteAttachments(prev => [...prev, ...attachments]);
-    setIsUploading(false);
   };
 
   const handleViewNote = (note: Note) => {
@@ -306,6 +221,18 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
     return categories.find(cat => cat.id === categoryId) || { name: categoryId, icon: '📄' };
   };
 
+  const getNotesForCategory = (categoryId: string) => {
+    return notes.filter(note => {
+      const categoryMatch = note.category === categoryId;
+      if (!searchTerm) return categoryMatch;
+      
+      const titleMatch = note.title.toLowerCase().includes(searchTerm.toLowerCase());
+      const contentMatch = note.content.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      return categoryMatch && (titleMatch || contentMatch);
+    });
+  };
+
   const formatDate = (date: Date | string) => {
     const d = new Date(date);
     return d.toLocaleString('tr-TR');
@@ -326,403 +253,362 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
     );
   };
 
-  // Real-time Search Function
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-    
-    if (value.trim().length > 0) {
-      const searchResults = notes.filter(note => 
-        note.title.toLowerCase().includes(value.toLowerCase()) ||
-        note.content.toLowerCase().includes(value.toLowerCase())
-      ).slice(0, 5); // Sadece ilk 5 sonuç
-      
-      setSearchResults(searchResults);
-      setShowSearchDropdown(true);
-    } else {
-      setSearchResults([]);
-      setShowSearchDropdown(false);
-    }
-  };
-
-  // Navigate to Note
-  const navigateToNote = (note: Note) => {
-    setViewingNote(note);
-    setShowDetailModal(true);
-    setShowSearchDropdown(false);
-    setSearchTerm('');
-    addNotification(`"${note.title}" notuna yönlendirildin`);
-  };
-
   return (
-    <>
-      {/* Google Alumni Sans Font */}
-      <link 
-        href="https://fonts.googleapis.com/css2?family=Alumni+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" 
-        rel="stylesheet"
-      />
-      
-      {/* Notification System */}
-      <div className="notifications-container">
-        {notifications.map(notification => (
-          <div key={notification.id} className={`notification ${notification.type}`}>
-            {notification.message}
-          </div>
-        ))}
-      </div>
-      
     <div className="container-fluid py-4">
-      <style jsx global>{`
-        /* Global Alumni Sans Font */
-        * {
-          font-family: 'Alumni Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      <style jsx>{`
+        .gradient-bg {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-
-        /* Notification Styles */
-        .notifications-container {
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          z-index: 9999;
-        }
-        
-        .notification {
-          padding: 12px 20px;
-          margin-bottom: 10px;
-          border-radius: 8px;
-          color: white;
-          font-weight: 500;
-          animation: slideIn 0.3s ease-out;
-          min-width: 300px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        .notification.success {
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
-        
-        .notification.error {
-          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        }
-        
-        .notification.warning {
-          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        }
-        
-        @keyframes slideIn {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-
-        /* Tasks Table Card Style - Dashboard ile uyumlu */
-        .tasks-table-card {
+        .glass-card {
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(10px);
-          border-radius: 20px;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           border: 1px solid rgba(255, 255, 255, 0.2);
-          padding: 2rem;
-          margin-bottom: 2rem;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
-
-        .table-header {
-          margin-bottom: 2rem;
+        .category-btn {
+          transition: all 0.3s ease;
+          border-radius: 25px;
+          font-weight: 600;
+          padding: 12px 24px;
+          border: 2px solid transparent;
         }
-
-        .gradient-text {
-          background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+        .category-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
-
-        .table-responsive {
+        .category-btn.active {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-color: #667eea;
+        }
+        .note-card {
+          transition: all 0.3s ease;
           border-radius: 15px;
-          overflow: hidden;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .table {
-          margin-bottom: 0;
-          background: white;
-        }
-
-        .table th {
-          background: rgba(102, 126, 234, 0.05) !important;
-          border-bottom: none !important;
-          font-weight: 700 !important;
-          color: #4a5568 !important;
-          padding: 1rem 1.5rem !important;
-        }
-
-        .table td {
-          padding: 1.5rem !important;
-          vertical-align: middle !important;
-          border-bottom: 1px solid rgba(0,0,0,0.05) !important;
-        }
-
-        .action-btn {
-          padding: 8px 12px;
           border: none;
-          border-radius: 8px;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.2s;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
+          overflow: hidden;
         }
-
-        .btn-sm {
-          padding: 0.375rem 0.75rem !important;
-          font-size: 0.875rem !important;
-          line-height: 1.5 !important;
-          border-radius: 0.375rem !important;
+        .note-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        .note-header {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 20px;
+          border-radius: 15px 15px 0 0;
+        }
+        .note-content {
+          padding: 0;
+          max-height: 400px;
+          overflow-y: auto;
+        }
+        .note-item {
+          padding: 20px;
+          border-bottom: 1px solid #f0f0f0;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+        }
+        .note-item:hover {
+          background-color: #f8f9ff;
+        }
+        .note-item:last-child {
+          border-bottom: none;
+        }
+        .note-title {
+          color: #667eea;
+          font-weight: 700;
+          font-size: 16px;
+          margin-bottom: 8px;
+          cursor: pointer;
+          transition: color 0.2s ease;
+        }
+        .note-title:hover {
+          color: #764ba2;
+        }
+        .note-text {
+          color: #666;
+          font-size: 14px;
+          line-height: 1.6;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .empty-state {
+          text-align: center;
+          padding: 60px 20px;
+          color: #999;
+        }
+        .empty-icon {
+          font-size: 4rem;
+          margin-bottom: 20px;
+          opacity: 0.3;
+        }
+        .action-btn {
+          border: none;
+          background: none;
+          color: #666;
+          padding: 8px 12px;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+          font-size: 14px;
+        }
+        .action-btn:hover {
+          background-color: #f0f0f0;
+          color: #333;
+        }
+        .btn-primary {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border: none;
+          border-radius: 25px;
+          padding: 12px 30px;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .modal-content {
+          border: none;
+          border-radius: 20px;
+          overflow: hidden;
+        }
+        .modal-header {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border: none;
+          padding: 25px 30px;
+        }
+        .modal-body {
+          padding: 30px;
+        }
+        .form-label {
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 8px;
+          font-size: 14px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .form-control, .form-select {
+          border-radius: 12px;
+          border: 2px solid #e9ecef;
+          padding: 12px 16px;
+          transition: all 0.2s ease;
+        }
+        .form-control:focus, .form-select:focus {
+          border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .detail-content {
+          background: #f8f9ff;
+          border-radius: 12px;
+          padding: 25px;
+          min-height: 200px;
+          max-height: 400px;
+          overflow-y: auto;
+          white-space: pre-wrap;
+          line-height: 1.8;
+          font-size: 15px;
         }
       `}</style>
 
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="gradient-text fw-bold fs-1 mb-0">📝 Birim Notları Yönetimi</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="btn gradient-btn text-white px-4 py-2"
-          style={{
-            background: 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)',
-            border: 'none',
-            borderRadius: '15px',
-            fontWeight: '600'
-          }}
-        >
-          <Plus className="me-2" size={18} />
-          Yeni Not Ekle
-        </button>
-      </div>
-
-      {/* Kategoriler Filtresi */}
-      <div className="mb-4">
-        <div className="d-flex flex-wrap gap-2">
-          <button
-            onClick={() => setSelectedCategory('')}
-            className={`btn ${!selectedCategory ? 'btn-primary' : 'btn-outline-primary'}`}
-            style={{ borderRadius: '20px' }}
-          >
-            🔍 Tümü ({notes.length})
-          </button>
-          {categories.map(category => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`btn ${selectedCategory === category.id ? 'btn-primary' : 'btn-outline-primary'}`}
-              style={{ borderRadius: '20px' }}
-            >
-              {category.icon} {category.name} ({notes.filter(note => note.category === category.id).length})
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Notlar Tablosu - Görevler tarzında */}
-      <div className="tasks-table-card">
-        <div className="table-header">
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="gradient-text fw-bold fs-3 mb-0">📝 Birim Notları</h2>
-            <div className="d-flex gap-2">
-              <div style={{width: '12px', height: '12px', backgroundColor: '#ff6b6b', borderRadius: '50%'}}></div>
-              <div style={{width: '12px', height: '12px', backgroundColor: '#feca57', borderRadius: '50%'}}></div>
-              <div style={{width: '12px', height: '12px', backgroundColor: '#48cab2', borderRadius: '50%'}}></div>
+      <div className="row">
+        <div className="col-12">
+          {/* Header */}
+          <div className="glass-card rounded-4 p-4 mb-4">
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <h1 className="fw-bold text-dark mb-2" style={{fontSize: '2.5rem'}}>
+                  📝 Hastane Birim Notları
+                </h1>
+                <p className="text-muted mb-0" style={{fontSize: '1.1rem'}}>
+                  Birimler arası iletişim ve bilgi paylaşımı merkezi
+                </p>
+              </div>
+              <button
+                className="btn btn-primary btn-lg shadow-sm"
+                onClick={() => {
+                  resetForm();
+                  setShowModal(true);
+                }}
+              >
+                <i className="bi bi-plus-circle me-2"></i>
+                Yeni Not Ekle
+              </button>
             </div>
           </div>
-        </div>
-        
-        {isLoading ? (
-          <div className="text-center py-5">
-            <div className="mx-auto mb-4" style={{
-              width: '100px', 
-              height: '100px', 
-              background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-              borderRadius: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <div className="spinner-border text-primary" role="status">
+
+          {/* Kategori Filtreleme */}
+          <div className="glass-card rounded-4 p-4 mb-4">
+            <h5 className="fw-bold text-dark mb-3">🏥 Birim Seçimi</h5>
+            <div className="d-flex flex-wrap gap-3">
+              <button
+                className={`category-btn ${!selectedCategory ? 'active' : 'btn-outline-primary'}`}
+                onClick={() => setSelectedCategory('')}
+              >
+                🏥 Tüm Birimler
+              </button>
+              {categories.map(category => (
+                <button
+                  key={category.id}
+                  className={`category-btn ${selectedCategory === category.id ? 'active' : 'btn-outline-primary'}`}
+                  onClick={() => setSelectedCategory(category.id)}
+                >
+                  {category.icon} {category.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Not Kartları */}
+          {isLoading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-primary" role="status" style={{width: '3rem', height: '3rem'}}>
                 <span className="visually-hidden">Yükleniyor...</span>
               </div>
+              <p className="mt-3 text-muted">Notlar yükleniyor...</p>
             </div>
-            <h4 className="fw-bold text-dark mb-3">Notlar yükleniyor...</h4>
-          </div>
-        ) : notes.length === 0 ? (
-          <div className="text-center py-5">
-            <div className="mx-auto mb-4" style={{
-              width: '100px', 
-              height: '100px', 
-              background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-              borderRadius: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Plus size={40} className="text-muted" />
-            </div>
-            <h4 className="fw-bold text-dark mb-3">Henüz not yok</h4>
-            <p className="text-muted mb-4">İlk notunuzu oluşturun ve bilgi paylaşımını başlatın!</p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="btn gradient-btn text-white px-4 py-3"
-              style={{
-                background: 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)',
-                border: 'none',
-                borderRadius: '15px'
-              }}
-            >
-              <Plus className="me-2" size={18} />
-              İlk Notumu Oluştur 🚀
-            </button>
-          </div>
-        ) : (
-          <div className="table-responsive">
-            <table className="table table-hover mb-0">
-              <thead>
-                <tr style={{backgroundColor: 'rgba(102, 126, 234, 0.05)'}}>
-                  <th className="border-0 fw-bold text-uppercase small ps-4 py-3">📝 Başlık</th>
-                  <th className="border-0 fw-bold text-uppercase small py-3">📂 Birim</th>
-                  <th className="border-0 fw-bold text-uppercase small py-3">📄 İçerik</th>
-                  <th className="border-0 fw-bold text-uppercase small py-3">📅 Tarih</th>
-                  <th className="border-0 fw-bold text-uppercase small pe-4 py-3">🔧 İşlemler</th>
-                </tr>
-              </thead>
-              <tbody>
-                {notes
-                  .filter(note => {
-                    // Kategori filtresi
-                    if (selectedCategory && note.category !== selectedCategory) return false;
-                    // Arama filtresi
-                    if (!externalSearchTerm && !searchTerm) return true;
-                    const term = externalSearchTerm || searchTerm;
-                    return note.title.toLowerCase().includes(term.toLowerCase()) ||
-                           note.content.toLowerCase().includes(term.toLowerCase());
-                  })
-                  .map((note, index) => (
-                  <tr key={note.id} style={{borderBottom: '1px solid rgba(0,0,0,0.05)'}}>
-                    <td className="border-0 ps-4 py-4">
-                      <div>
-                        <h6 className="fw-bold mb-1 text-dark" style={{fontSize: '18px'}}>
-                          {highlightText(note.title.toUpperCase(), externalSearchTerm || searchTerm)}
-                        </h6>
-                        {note.attachments && note.attachments.length > 0 && (
-                          <div className="d-flex gap-2 mt-2">
-                            {note.attachments.slice(0, 2).map((attachment, idx) => (
-                              <span key={idx} className="text-muted small bg-light rounded-pill px-2 py-1 d-inline-flex align-items-center">
-                                {getFileIcon(attachment.fileName, attachment.fileType)}
-                                <span className="ms-1">{attachment.originalName}</span>
-                              </span>
-                            ))}
-                            {note.attachments.length > 2 && (
-                              <span className="text-muted small bg-light rounded-pill px-2 py-1">
-                                +{note.attachments.length - 2} dosya
-                              </span>
-                            )}
+          ) : (
+            <div className="row g-4">
+              {categories.map(category => {
+                const categoryNotes = getNotesForCategory(category.id);
+                if (selectedCategory && selectedCategory !== category.id) return null;
+                
+                return (
+                  <div key={category.id} className="col-xl-4 col-lg-6 col-md-6">
+                    <div className="note-card glass-card h-100">
+                      <div className="note-header">
+                        <h4 className="fw-bold mb-1">
+                          {category.icon} {category.name}
+                        </h4>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <span className="badge bg-light text-primary">
+                            {categoryNotes.length} not
+                          </span>
+                          <button
+                            className="btn btn-light btn-sm"
+                            onClick={() => {
+                              resetForm();
+                              setNoteForm(prev => ({ ...prev, category: category.id }));
+                              setShowModal(true);
+                            }}
+                          >
+                            <i className="bi bi-plus"></i>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="note-content">
+                        {categoryNotes.length === 0 ? (
+                          <div className="empty-state">
+                            <div className="empty-icon">📄</div>
+                            <h6 className="fw-bold">Henüz not bulunmuyor</h6>
+                            <p className="small">Bu birime ait ilk notu oluşturun</p>
                           </div>
+                        ) : (
+                          categoryNotes.map(note => (
+                            <div 
+                              key={note.id} 
+                              className="note-item"
+                              onClick={() => handleViewNote(note)}
+                            >
+                              <div className="d-flex justify-content-between align-items-start mb-2">
+                                <h6 className="note-title">{highlightText(note.title, searchTerm)}</h6>
+                                <div className="d-flex gap-1">
+                                  <button
+                                    className="btn btn-sm btn-outline-primary"
+                                    title="Düzenle"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditNote(note);
+                                    }}
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button
+                                    className="btn btn-sm btn-outline-danger"
+                                    title="Sil"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (window.confirm('Bu notu silmek istediğinizden emin misiniz?')) {
+                                        handleDeleteNote(note.id);
+                                      }
+                                    }}
+                                  >
+                                    🗑️
+                                  </button>
+                                  <div className="dropdown">
+                                    <button
+                                      className="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                      type="button"
+                                      data-bs-toggle="dropdown"
+                                      onClick={(e) => e.stopPropagation()}
+                                      title="Daha fazla seçenek"
+                                    >
+                                      ⋮
+                                    </button>
+                                    <ul className="dropdown-menu shadow-sm">
+                                      <li>
+                                        <button
+                                          className="dropdown-item"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditNote(note);
+                                          }}
+                                        >
+                                          <i className="bi bi-pencil me-2"></i>Düzenle
+                                        </button>
+                                      </li>
+                                      <li>
+                                        <button
+                                          className="dropdown-item text-danger"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteNote(note.id);
+                                          }}
+                                        >
+                                          <i className="bi bi-trash me-2"></i>Sil
+                                        </button>
+                                      </li>
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <p className="note-text">{highlightText(note.content, searchTerm)}</p>
+                              
+                              <div className="d-flex justify-content-between align-items-center mt-3">
+                                <small className="text-muted">
+                                  <i className="bi bi-clock me-1"></i>
+                                  {formatDate(note.updatedAt)}
+                                </small>
+                                <div className="d-flex gap-2">
+                                  {note.attachments && note.attachments.length > 0 && (
+                                    <span className="badge bg-success">
+                                      <i className="bi bi-paperclip me-1"></i>
+                                      {note.attachments.length} dosya
+                                    </span>
+                                  )}
+                                  {note.attachmentUrl && (
+                                    <span className="badge bg-info">
+                                      <i className="bi bi-link me-1"></i>
+                                      Bağlantı
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))
                         )}
                       </div>
-                    </td>
-                    <td className="border-0 py-4">
-                      <div className="d-flex align-items-center">
-                        <span className="me-2" style={{fontSize: '20px'}}>
-                          {getCategoryInfo(note.category).icon}
-                        </span>
-                        <span className="fw-semibold text-dark">{getCategoryInfo(note.category).name}</span>
-                      </div>
-                    </td>
-                    <td className="border-0 py-4" style={{maxWidth: '300px'}}>
-                      <p className="mb-0 text-muted" style={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        fontSize: '16px'
-                      }}>
-                        {highlightText(note.content.length > 80 ? note.content.substring(0, 80) + '...' : note.content, externalSearchTerm || searchTerm)}
-                      </p>
-                    </td>
-                    <td className="border-0 py-4">
-                      <div className="text-muted small">
-                        <div>{formatDate(note.updatedAt).split(' ')[0]}</div>
-                        <div style={{fontSize: '14px', opacity: 0.8}}>{formatDate(note.updatedAt).split(' ')[1]}</div>
-                      </div>
-                    </td>
-                    <td className="border-0 py-4 pe-4">
-                      <div className="d-flex gap-2">
-                        <button
-                          onClick={() => handleViewNote(note)}
-                          className="action-btn"
-                          title="Notu Görüntüle"
-                          style={{
-                            backgroundColor: '#e3f2fd',
-                            color: '#1976d2'
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#1976d2';
-                            e.currentTarget.style.color = 'white';
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#e3f2fd';
-                            e.currentTarget.style.color = '#1976d2';
-                          }}
-                        >
-                          👁️
-                        </button>
-                        <button
-                          onClick={() => handleEditNote(note)}
-                          className="action-btn"
-                          title="Notu Düzenle"
-                          style={{
-                            backgroundColor: '#fff3e0',
-                            color: '#f57c00'
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f57c00';
-                            e.currentTarget.style.color = 'white';
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#fff3e0';
-                            e.currentTarget.style.color = '#f57c00';
-                          }}
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteNote(note.id)}
-                          className="action-btn"
-                          title="Notu Sil"
-                          style={{
-                            backgroundColor: '#ffebee',
-                            color: '#d32f2f'
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#d32f2f';
-                            e.currentTarget.style.color = 'white';
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#ffebee';
-                            e.currentTarget.style.color = '#d32f2f';
-                          }}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Not Ekleme/Düzenleme Modal */}
@@ -730,7 +616,7 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header text-white" style={{background: 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)'}}>
+              <div className="modal-header text-white">
                 <h5 className="modal-title fw-bold">
                   {editingNote ? '✏️ Not Düzenle' : '➕ Yeni Not Ekle'}
                 </h5>
@@ -744,7 +630,7 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
                 <div className="modal-body">
                   <div className="row g-3">
                     <div className="col-12">
-                      <label className="form-label fw-bold">📂 Birim</label>
+                      <label className="form-label">📂 Birim</label>
                       <select
                         className="form-select"
                         value={noteForm.category}
@@ -761,19 +647,19 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
                     </div>
                     
                     <div className="col-12">
-                      <label className="form-label fw-bold">📝 Başlık</label>
+                      <label className="form-label">📝 Başlık</label>
                       <input
                         type="text"
                         className="form-control"
                         value={noteForm.title}
-                        onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value.toUpperCase() })}
+                        onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })}
                         placeholder="Not başlığını girin..."
                         required
                       />
                     </div>
                     
                     <div className="col-12">
-                      <label className="form-label fw-bold">📄 İçerik</label>
+                      <label className="form-label">📄 İçerik</label>
                       <textarea
                         className="form-control"
                         rows={8}
@@ -784,26 +670,71 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
                         style={{resize: 'vertical'}}
                       ></textarea>
                     </div>
+                    
+                    <div className="col-12">
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <label className="form-label mb-0">📎 Dosya Eklentileri</label>
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary btn-sm"
+                          onClick={() => setShowFileUpload(!showFileUpload)}
+                        >
+                          {showFileUpload ? '📁 Gizle' : '📤 Dosya Ekle'}
+                        </button>
+                      </div>
+                      
+                      {showFileUpload && (
+                        <FileUpload
+                          onUploadComplete={handleFileUploadComplete}
+                          maxFiles={3}
+                          showPreview={true}
+                        />
+                      )}
+                      
+                      {noteAttachments.length > 0 && (
+                        <div className="mt-3 p-3 bg-light rounded-3">
+                          <small className="fw-bold text-muted">Eklenecek Dosyalar:</small>
+                          <div className="mt-2">
+                            {noteAttachments.map((attachment, index) => (
+                              <div key={index} className="d-flex align-items-center justify-content-between p-2 bg-white rounded mb-2">
+                                <div className="d-flex align-items-center">
+                                  <span className="me-2">
+                                    {attachment.isImage ? '🖼️' : '📄'}
+                                  </span>
+                                  <small className="fw-semibold">{attachment.originalName}</small>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-danger"
+                                  onClick={() => setNoteAttachments(prev => prev.filter((_, i) => i !== index))}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="col-12">
+                      <label className="form-label">🔗 Ek Dosya URL (İsteğe Bağlı)</label>
+                      <input
+                        type="url"
+                        className="form-control"
+                        value={noteForm.attachmentUrl}
+                        onChange={(e) => setNoteForm({ ...noteForm, attachmentUrl: e.target.value })}
+                        placeholder="https://example.com/dosya.pdf"
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="modal-footer border-0 pt-0">
                   <button type="button" className="btn btn-light" onClick={resetForm}>
                     ❌ İptal
                   </button>
-                  <button 
-                    type="submit" 
-                    className="btn text-white"
-                    disabled={isUploading || isSubmitting}
-                    style={{background: 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)'}}
-                  >
-                    {isSubmitting 
-                      ? '⏳ Kaydediliyor...' 
-                      : isUploading 
-                        ? '📤 Dosyalar yükleniyor...'
-                        : editingNote 
-                          ? '✏️ Güncelle' 
-                          : '💾 Kaydet'
-                    }
+                  <button type="submit" className="btn btn-primary">
+                    {editingNote ? '✅ Güncelle' : '💾 Kaydet'}
                   </button>
                 </div>
               </form>
@@ -815,11 +746,12 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
       {/* Not Detay Modal */}
       {showDetailModal && viewingNote && (
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-dialog modal-xl modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header text-white" style={{background: 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)'}}>
-                <h5 className="modal-title fw-bold">
-                  📖 {viewingNote.title}
+              <div className="modal-header text-white">
+                <h5 className="modal-title fw-bold d-flex align-items-center">
+                  {getCategoryInfo(viewingNote.category).icon} 
+                  <span className="ms-2">{viewingNote.title}</span>
                 </h5>
                 <button
                   type="button"
@@ -828,73 +760,134 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
                 ></button>
               </div>
               <div className="modal-body">
-                <div className="mb-3">
-                  <div className="d-flex align-items-center gap-3 mb-3">
-                    <div className="d-flex align-items-center">
-                      <span className="me-2" style={{fontSize: '24px'}}>
-                        {getCategoryInfo(viewingNote.category).icon}
+                <div className="row g-4">
+                  <div className="col-12">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <span className="badge bg-primary text-white fs-6 px-3 py-2">
+                        {getCategoryInfo(viewingNote.category).icon} {getCategoryInfo(viewingNote.category).name}
                       </span>
-                      <strong>{getCategoryInfo(viewingNote.category).name}</strong>
+                      <small className="text-muted">
+                        <i className="bi bi-clock me-1"></i>
+                        Son Güncelleme: {formatDate(viewingNote.updatedAt)}
+                      </small>
                     </div>
-                    <small className="text-muted">
-                      Son Güncelleme: {formatDate(viewingNote.updatedAt)}
-                    </small>
                   </div>
                   
-                  <div className="bg-light p-4 rounded">
-                    <p className="mb-0" style={{whiteSpace: 'pre-wrap', lineHeight: '1.6'}}>
+                  <div className="col-12">
+                    <h6 className="form-label">📄 İçerik</h6>
+                    <div className="detail-content">
                       {viewingNote.content}
-                    </p>
+                    </div>
+                  </div>
+
+                  {/* Yüklenen Dosyalar */}
+                  {viewingNote.attachments && viewingNote.attachments.length > 0 && (
+                    <div className="col-12">
+                      <h6 className="form-label">📎 Yüklenen Dosyalar ({viewingNote.attachments.length})</h6>
+                      <div className="row g-3">
+                        {viewingNote.attachments.map((attachment, index) => (
+                          <div key={index} className="col-lg-6">
+                            <div className="p-3 bg-light rounded-3 h-100">
+                              {attachment.isImage ? (
+                                <div className="text-center mb-3">
+                                  <img 
+                                    src={attachment.filePath}
+                                    alt={attachment.originalName}
+                                    className="img-fluid rounded"
+                                    style={{ maxHeight: '200px', objectFit: 'cover', cursor: 'pointer' }}
+                                    onClick={() => window.open(attachment.filePath, '_blank')}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="text-center mb-3">
+                                  <div 
+                                    className="d-inline-flex align-items-center justify-content-center rounded-3 p-4"
+                                    style={{ 
+                                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                      width: '80px',
+                                      height: '80px'
+                                    }}
+                                  >
+                                    <span className="text-white fw-bold fs-5">
+                                      {attachment.fileType.split('/')[1]?.toUpperCase().slice(0, 3) || 'DOC'}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <h6 className="fw-semibold text-dark mb-2">{attachment.originalName}</h6>
+                              <div className="d-flex justify-content-between align-items-center mb-2">
+                                <small className="text-muted">
+                                  📊 {Math.round(attachment.fileSize / 1024)} KB
+                                </small>
+                                <small className="text-muted">
+                                  📅 {new Date(attachment.uploadedAt).toLocaleDateString('tr-TR')}
+                                </small>
+                              </div>
+                              
+                              <a 
+                                href={attachment.filePath} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="btn btn-outline-primary btn-sm w-100"
+                              >
+                                <i className="bi bi-download me-2"></i>
+                                {attachment.isImage ? 'Büyük Göster' : 'İndir'}
+                              </a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Eski URL Eklentisi */}
+                  {viewingNote.attachmentUrl && (
+                    <div className="col-12">
+                      <h6 className="form-label">🔗 Ek Bağlantı</h6>
+                      <div className="p-3 bg-light rounded-3">
+                        <a 
+                          href={viewingNote.attachmentUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-decoration-none d-flex align-items-center text-primary fw-semibold"
+                        >
+                          <i className="bi bi-paperclip me-2"></i>
+                          {viewingNote.attachmentName || 'Ek Dosya'}
+                          <i className="bi bi-box-arrow-up-right ms-2"></i>
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="col-md-6">
+                    <small className="text-muted">
+                      <strong>📅 Oluşturulma:</strong><br />
+                      {formatDate(viewingNote.createdAt)}
+                    </small>
+                  </div>
+                  <div className="col-md-6">
+                    <small className="text-muted">
+                      <strong>🔄 Son Güncelleme:</strong><br />
+                      {formatDate(viewingNote.updatedAt)}
+                    </small>
                   </div>
                 </div>
               </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-outline-primary"
-                  onClick={handleEditFromDetail}
-                >
-                  ✏️ Düzenle
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
+              <div className="modal-footer border-0">
+                <button 
+                  type="button" 
+                  className="btn btn-light" 
                   onClick={closeDetailModal}
                 >
-                  Kapat
+                  👁️ Kapat
                 </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Silme Onay Modal */}
-      {showDeleteModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header bg-danger text-white">
-                <h5 className="modal-title">🗑️ Not Silme Onayı</h5>
-              </div>
-              <div className="modal-body">
-                <p>Bu notu silmek istediğinizden emin misiniz?</p>
-                <p className="text-muted small">Bu işlem geri alınamaz.</p>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowDeleteModal(false)}
+                <button 
+                  type="button" 
+                  className="btn btn-primary"
+                  onClick={handleEditFromDetail}
                 >
-                  İptal
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  onClick={confirmDeleteNote}
-                >
-                  Sil
+                  <i className="bi bi-pencil me-2"></i>Düzenle
                 </button>
               </div>
             </div>
@@ -902,7 +895,6 @@ const Notes = ({ searchTerm: externalSearchTerm = '' }: NotesProps) => {
         </div>
       )}
     </div>
-    </>
   );
 };
 
