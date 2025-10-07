@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.58.0",
+    "@supabase/supabase-js": "^2.74.0",
     "autoprefixer": "^10.4.21",
     "bcryptjs": "^2.4.3",
     "js-cookie": "^3.0.5",
@@ -31,4 +31,3 @@
     "typescript": "^5"
   }
 }
-

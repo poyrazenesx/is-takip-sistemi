@@ -887,6 +887,71 @@ export default function Dashboard({ users }: DashboardProps) {
           font-weight: 600;
           font-size: 14px;
         }
+
+        /* Faydalı Linkler Styles */
+        .useful-link-card {
+          background: rgba(255, 255, 255, 0.95);
+          border: 2px solid rgba(26, 32, 44, 0.1);
+          border-radius: 16px;
+          padding: 20px;
+          text-align: center;
+          transition: all 0.3s ease;
+          backdrop-filter: blur(10px);
+          box-shadow: 0 4px 15px rgba(26, 32, 44, 0.08);
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+
+        .useful-link-card:hover {
+          transform: translateY(-5px);
+          border-color: #1a202c;
+          box-shadow: 0 8px 25px rgba(26, 32, 44, 0.15);
+          background: rgba(255, 255, 255, 1);
+        }
+
+        .link-title {
+          color: #1a202c;
+          font-family: 'Alumni Sans', sans-serif;
+          font-weight: 700;
+          font-size: 1.1rem;
+          margin-bottom: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .link-url {
+          color: #2563eb;
+          text-decoration: none;
+          font-weight: 600;
+          font-size: 14px;
+          padding: 8px 16px;
+          background: rgba(37, 99, 235, 0.1);
+          border-radius: 8px;
+          border: 1px solid rgba(37, 99, 235, 0.2);
+          transition: all 0.2s ease;
+          display: inline-block;
+          word-break: break-all;
+        }
+
+        .link-url:hover {
+          background: #2563eb;
+          color: white;
+          transform: scale(1.05);
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        @media (max-width: 768px) {
+          .useful-link-card {
+            margin-bottom: 1rem;
+          }
+          
+          .link-url {
+            font-size: 12px;
+            padding: 6px 12px;
+          }
+        }
         
 
       `}</style>
@@ -1073,6 +1138,83 @@ export default function Dashboard({ users }: DashboardProps) {
                       <UserIcon className="text-white" size={16} />
                     </div>
                     <span className="fw-bold text-dark">{users.length} Kullanıcı</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Faydalı Linkler */}
+          <div className="row mb-4">
+            <div className="col-12">
+              <div className="glass-card rounded-4 p-4">
+                <h5 className="fw-bold mb-3 text-center" style={{color: '#1a202c', fontFamily: 'Alumni Sans, sans-serif'}}>
+                  🔗 FAYDALI LİNKLER
+                </h5>
+                <div className="row g-3">
+                  <div className="col-md-4">
+                    <div className="useful-link-card">
+                      <h6 className="link-title">🖥️ Origo Exe Kurulumu</h6>
+                      <a href="http://10.43.0.22:8040" target="_blank" rel="noopener noreferrer" className="link-url">
+                        10.43.0.22:8040
+                      </a>
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="useful-link-card">
+                      <h6 className="link-title">🏥 ALIS</h6>
+                      <a href="http://10.43.0.22:8077" target="_blank" rel="noopener noreferrer" className="link-url">
+                        10.43.0.22:8077
+                      </a>
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="useful-link-card">
+                      <h6 className="link-title">💰 PAGO</h6>
+                      <a href="http://10.43.0.25:8066" target="_blank" rel="noopener noreferrer" className="link-url">
+                        10.43.0.25:8066
+                      </a>
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="useful-link-card">
+                      <h6 className="link-title">🎫 Ticket Oluşturma</h6>
+                      <a href="https://destek.ventura.com.tr/scp/login.php" target="_blank" rel="noopener noreferrer" className="link-url">
+                        destek.ventura.com.tr
+                      </a>
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="useful-link-card">
+                      <h6 className="link-title">📷 PACS Görüntüleme</h6>
+                      <a href="http://10.43.0.6:33600" target="_blank" rel="noopener noreferrer" className="link-url">
+                        10.43.0.6:33600
+                      </a>
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="useful-link-card">
+                      <h6 className="link-title">📢 Hasta Çağır</h6>
+                      <a href="http://10.43.0.22:8504" target="_blank" rel="noopener noreferrer" className="link-url">
+                        10.43.0.22:8504
+                      </a>
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="useful-link-card">
+                      <h6 className="link-title">🔏 KAMUSM (E-İmza İçin)</h6>
+                      <a href="https://kamusm.bilgem.tubitak.gov.tr/" target="_blank" rel="noopener noreferrer" className="link-url">
+                        kamusm.bilgem.tubitak.gov.tr
+                      </a>
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="useful-link-card">
+                      <h6 className="link-title">📋 ARKSİGNER (Reçete E-İmza)</h6>
+                      <a href="https://www.arksigner.com/indir-windows" target="_blank" rel="noopener noreferrer" className="link-url">
+                        arksigner.com/indir-windows
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
