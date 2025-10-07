@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User } from '@/types';
-import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X } from 'lucide-react';
+import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor } from 'lucide-react';
 import Notes from '@/components/Notes';
 
 interface DashboardProps {
@@ -335,6 +335,63 @@ export default function Dashboard({ users }: DashboardProps) {
       <style jsx>{`
         * {
           font-family: 'Alumni Sans', sans-serif !important;
+        }
+
+        /* Font Size Improvements */
+        body, .container, .row, .col {
+          font-size: 16px !important;
+        }
+
+        h1 {
+          font-size: 2.5rem !important;
+        }
+
+        h2 {
+          font-size: 2.2rem !important;
+        }
+
+        h3 {
+          font-size: 1.9rem !important;
+        }
+
+        h4 {
+          font-size: 1.7rem !important;
+        }
+
+        h5 {
+          font-size: 1.4rem !important;
+        }
+
+        h6 {
+          font-size: 1.2rem !important;
+        }
+
+        p, span, div {
+          font-size: 16px !important;
+          line-height: 1.6 !important;
+        }
+
+        .btn {
+          font-size: 15px !important;
+          padding: 12px 20px !important;
+        }
+
+        .table td, .table th {
+          font-size: 15px !important;
+          padding: 15px !important;
+        }
+
+        .form-control, .form-select {
+          font-size: 15px !important;
+          padding: 12px !important;
+        }
+
+        .modal-body {
+          font-size: 16px !important;
+        }
+
+        .modal-title {
+          font-size: 1.6rem !important;
         }
         
         .dashboard-container {
@@ -852,6 +909,10 @@ export default function Dashboard({ users }: DashboardProps) {
             <a href="#" className="nav-link">📊 Dashboard</a>
             <a href="#" className="nav-link">📝 Notlar</a>
             <a href="#" className="nav-link">✅ Görevler</a>
+            <a href="/donanim" className="nav-link">
+              <Monitor className="inline-block w-4 h-4 mr-1" />
+              Donanım
+            </a>
             <a href="#" className="nav-link">📈 Raporlar</a>
             <a href="#" className="nav-link">⚙️ Ayarlar</a>
             <a href="#" className="nav-link">👥 Kullanıcılar</a>
@@ -958,6 +1019,27 @@ export default function Dashboard({ users }: DashboardProps) {
                 >
                   <Plus className="me-2" size={18} />
                   Yeni Görev
+                </button>
+
+                <button
+                  onClick={() => window.location.href = '/donanim'}
+                  className="btn btn-outline-primary me-2"
+                  style={{
+                    borderColor: '#1a202c',
+                    color: '#1a202c',
+                    fontWeight: '600'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#1a202c';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#1a202c';
+                  }}
+                >
+                  <Monitor className="me-2" size={18} />
+                  Donanım
                 </button>
 
                 <button
