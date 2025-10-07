@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User } from '@/types';
-import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search } from 'lucide-react';
+import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText } from 'lucide-react';
 import Notes from '@/components/Notes';
 
 interface DashboardProps {
@@ -13,6 +13,7 @@ interface DashboardProps {
 export default function Dashboard({ users }: DashboardProps) {
   const { user, logout } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [notes, setNotes] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -31,6 +32,7 @@ export default function Dashboard({ users }: DashboardProps) {
 
   useEffect(() => {
     fetchTasks();
+    fetchNotes();
   }, []);
 
   const fetchTasks = async () => {
@@ -44,6 +46,18 @@ export default function Dashboard({ users }: DashboardProps) {
       console.error('Görevler alınamadı:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchNotes = async () => {
+    try {
+      const response = await fetch('/api/notes');
+      if (response.ok) {
+        const data = await response.json();
+        setNotes(data.notes || []);
+      }
+    } catch (error) {
+      console.error('Notlar alınamadı:', error);
     }
   };
 
@@ -320,6 +334,15 @@ export default function Dashboard({ users }: DashboardProps) {
           margin-bottom: 15px;
         }
         
+        .stat-icon-small {
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
         .tasks-table-card {
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(20px);
@@ -526,46 +549,25 @@ export default function Dashboard({ users }: DashboardProps) {
         
         {/* Ana İçerik */}
         <main className="container py-4">
-          {/* İstatistikler */}
-          <div className="row g-4 mb-5">
-            <div className="col-md-6 col-lg-3">
-              <div className="stat-card">
-                <div className="stat-icon" style={{background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}}>
-                  <AlertCircle className="text-white" size={24} />
+          {/* Sade İstatistik */}
+          <div className="row mb-4">
+            <div className="col-12">
+              <div className="glass-card rounded-4 p-3">
+                <div className="d-flex align-items-center justify-content-center gap-4">
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="stat-icon-small" style={{background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}}>
+                      <FileText className="text-white" size={16} />
+                    </div>
+                    <span className="fw-bold text-dark">{notes.length} Not</span>
+                  </div>
+                  <div className="text-muted">•</div>
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="stat-icon-small" style={{background: 'linear-gradient(135deg, #48cab2 0%, #54a0ff 100%)'}}>
+                      <UserIcon className="text-white" size={16} />
+                    </div>
+                    <span className="fw-bold text-dark">{users.length} Kullanıcı</span>
+                  </div>
                 </div>
-                <h3 className="fw-bold text-dark mb-1">{tasks.length}</h3>
-                <p className="text-muted small fw-bold text-uppercase mb-0">Toplam Görev</p>
-              </div>
-            </div>
-            <div className="col-md-6 col-lg-3">
-              <div className="stat-card">
-                <div className="stat-icon" style={{background: 'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)'}}>
-                  <Clock className="text-white" size={24} />
-                </div>
-                <h3 className="fw-bold text-dark mb-1">
-                  {tasks.filter(task => task.status === 'in-progress').length}
-                </h3>
-                <p className="text-muted small fw-bold text-uppercase mb-0">Devam Eden</p>
-              </div>
-            </div>
-            <div className="col-md-6 col-lg-3">
-              <div className="stat-card">
-                <div className="stat-icon" style={{background: 'linear-gradient(135deg, #48cab2 0%, #54a0ff 100%)'}}>
-                  <CheckCircle className="text-white" size={24} />
-                </div>
-                <h3 className="fw-bold text-dark mb-1">
-                  {tasks.filter(task => task.status === 'completed').length}
-                </h3>
-                <p className="text-muted small fw-bold text-uppercase mb-0">Tamamlanan</p>
-              </div>
-            </div>
-            <div className="col-md-6 col-lg-3">
-              <div className="stat-card">
-                <div className="stat-icon" style={{background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)'}}>
-                  <UserIcon className="text-white" size={24} />
-                </div>
-                <h3 className="fw-bold text-dark mb-1">{users.length}</h3>
-                <p className="text-muted small fw-bold text-uppercase mb-0">Ekip Üyesi</p>
               </div>
             </div>
           </div>
