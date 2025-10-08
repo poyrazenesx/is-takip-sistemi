@@ -228,6 +228,49 @@ th, td {
   background: var(--dark-primary-gradient);
 }
 
+/* Action Buttons */
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.edit-btn {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.edit-btn:hover {
+  background-color: #e9ecef;
+  color: #212529;
+  transform: scale(1.05);
+}
+
+.delete-btn {
+  background-color: #f8f9fa;
+  color: #dc3545;
+}
+
+.delete-btn:hover {
+  background-color: #f5c6cb;
+  color: #721c24;
+  transform: scale(1.05);
+}
+
+/* Icon visibility */
+.action-btn svg {
+  display: block !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .login-card {
@@ -238,5 +281,15 @@ th, td {
   .logo-container {
     width: 50px;
     height: 50px;
+  }
+  
+  .action-btn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .action-btn svg {
+    width: 14px !important;
+    height: 14px !important;
   }
 }
