@@ -1,6 +1,6 @@
 import { User, Task } from '@/types';
 
-// Önceden tanımlanmış kullanıcılar - Production için sadece admin
+// Kullanıcılar
 export const users: User[] = [
   {
     id: 1,
@@ -8,6 +8,27 @@ export const users: User[] = [
     password: 'admin123',
     name: 'System Admin',
     role: 'admin'
+  },
+  {
+    id: 2,
+    username: 'doktor1',
+    password: 'doktor123',
+    name: 'Dr. Ahmet Yılmaz',
+    role: 'member'
+  },
+  {
+    id: 3,
+    username: 'hemsire1',
+    password: 'hemsire123',
+    name: 'Hemşire Ayşe Demir',
+    role: 'member'
+  },
+  {
+    id: 4,
+    username: 'teknisyen1',
+    password: 'teknisyen123',
+    name: 'IT Teknisyeni Mehmet Kaya',
+    role: 'member'
   }
 ];
 
