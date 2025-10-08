@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User, Hardware } from '@/types';
-import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor } from 'lucide-react';
+import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor, Eye } from 'lucide-react';
 import Notes from '@/components/Notes';
 
 
@@ -1466,14 +1466,14 @@ export default function Dashboard({ users }: DashboardProps) {
                               className="action-btn edit-btn"
                               title="Görevi Düzenle"
                             >
-                              <Edit size={16} />
+                              <Eye size={16} />
                             </button>
                             <button
                               onClick={() => handleDeleteTask(task.id)}
                               className="action-btn delete-btn"
                               title="Görevi Sil"
                             >
-                              <Trash2 size={16} />
+                              <X size={16} />
                             </button>
                           </div>
                         </td>
@@ -1590,14 +1590,14 @@ export default function Dashboard({ users }: DashboardProps) {
                                 className="action-btn edit-btn"
                                 title="Donanımı Düzenle"
                               >
-                                <Edit size={16} />
+                                <Eye size={16} />
                               </button>
                               <button
                                 onClick={() => handleDeleteHardware(item.id)}
                                 className="action-btn delete-btn"
                                 title="Donanımı Sil"
                               >
-                                <Trash2 size={16} />
+                                <X size={16} />
                               </button>
                             </div>
                           </td>
