@@ -94,19 +94,30 @@ export default function Dashboard({ users }: DashboardProps) {
   // Tools dropdown dışına tıklandığında kapat
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const toolsContainer = document.querySelector('.dropdown');
-      if (toolsContainer && !toolsContainer.contains(event.target as Node)) {
+      const toolsButton = document.querySelector('.tools-dropdown-btn');
+      const toolsMenu = document.querySelector('.tools-dropdown-menu');
+      
+      if (toolsButton && !toolsButton.contains(event.target as Node) && 
+          toolsMenu && !toolsMenu.contains(event.target as Node)) {
         setShowToolsDropdown(false);
       }
     };
 
     if (showToolsDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
+      // ESC tuşu ile kapama
+      const handleEscape = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          setShowToolsDropdown(false);
+        }
+      };
+      document.addEventListener('keydown', handleEscape);
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleEscape);
+      };
     }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
   }, [showToolsDropdown]);
 
   const fetchTasks = useCallback(async () => {
@@ -1141,9 +1152,9 @@ export default function Dashboard({ users }: DashboardProps) {
               </div>
               <div className="col-lg-3 col-md-2 col-sm-6 d-flex justify-content-center">
                 {/* Araçlar Dropdown */}
-                <div className="dropdown" style={{ position: 'relative' }}>
+                <div className="dropdown" style={{ position: 'relative', zIndex: 999998 }}>
                   <button
-                    className="btn btn-outline-secondary dropdown-toggle d-flex align-items-center"
+                    className="btn btn-outline-secondary dropdown-toggle d-flex align-items-center tools-dropdown-btn"
                     onClick={() => setShowToolsDropdown(!showToolsDropdown)}
                     style={{
                       borderColor: '#48cab2',
@@ -1170,18 +1181,19 @@ export default function Dashboard({ users }: DashboardProps) {
                   
                   {showToolsDropdown && (
                     <div 
-                      className="dropdown-menu show"
+                      className="dropdown-menu show tools-dropdown-menu"
                       style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: '0',
-                        zIndex: 9999,
-                        minWidth: '240px',
+                        position: 'fixed',
+                        top: '80px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: 999999,
+                        minWidth: '260px',
                         backgroundColor: 'white',
                         border: '1px solid rgba(0,0,0,0.1)',
-                        borderRadius: '8px',
-                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-                        padding: '12px 0',
+                        borderRadius: '12px',
+                        boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+                        padding: '15px 0',
                         marginTop: '8px'
                       }}
                     >
