@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User, Hardware } from '@/types';
-import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, Bell, X, Monitor, Eye, Calculator } from 'lucide-react';
+import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, Bell, X, Monitor, Eye, Calculator, FileText } from 'lucide-react';
 import Notes from '@/components/Notes';
 
 
