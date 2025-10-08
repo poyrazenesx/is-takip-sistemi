@@ -194,13 +194,22 @@ export default function Dashboard({ users }: DashboardProps) {
           addNotification('Donanım güncellenemedi: ' + errorData, 'error');
         }
       } else {
-        // Yeni donanım
+        // Yeni donanım - Veri formatını API'nin beklediği şekilde hazırla
+        const apiData = {
+          device_type: hardwareForm.device_type || 'Bilgisayar',
+          make_model: hardwareForm.make_model || '', // Yapılan işlem
+          status: hardwareForm.status || 'Aktif',
+          purchase_date: hardwareForm.purchase_date || new Date().toISOString().split('T')[0], // Bugünün tarihi varsayılan
+          ip_address: hardwareForm.ip_address || '',
+          notes: hardwareForm.notes || ''
+        };
+
         const response = await fetch('/api/hardware', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(hardwareForm),
+          body: JSON.stringify(apiData),
         });
 
         if (response.ok) {
