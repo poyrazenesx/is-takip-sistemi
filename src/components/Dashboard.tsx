@@ -49,8 +49,7 @@ export default function Dashboard({ users }: DashboardProps) {
   const [showBellDropdown, setShowBellDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   
-  // Hover navbar
-  const [showNavbar, setShowNavbar] = useState(false);
+
 
   // Form verileri
   const [taskForm, setTaskForm] = useState({
@@ -532,55 +531,7 @@ export default function Dashboard({ users }: DashboardProps) {
           transition: all 0.5s ease;
         }
         
-        /* Hover Navbar */
-        .hover-navbar {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          background: rgba(26, 32, 44, 0.95);
-          backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          transform: translateY(-100%);
-          transition: transform 0.3s ease;
-          z-index: 1000;
-          padding: 10px 0;
-        }
-        
-        .hover-navbar.show {
-          transform: translateY(0);
-        }
-        
-        .hover-navbar .nav-links {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 30px;
-        }
-        
-        .hover-navbar .nav-link {
-          color: white;
-          text-decoration: none;
-          padding: 8px 16px;
-          border-radius: 8px;
-          transition: background 0.2s ease;
-          font-weight: 500;
-        }
-        
-        .hover-navbar .nav-link:hover {
-          background: rgba(255, 255, 255, 0.1);
-          color: white;
-        }
-        
-        .hover-trigger {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 30px;
-          z-index: 999;
-          background: transparent;
-        }
+
 
         /* Notification System */
         .notifications-container {
@@ -1088,34 +1039,7 @@ export default function Dashboard({ users }: DashboardProps) {
 
       `}</style>
       
-      {/* Hover Trigger Area */}
-      <div 
-        className="hover-trigger"
-        onMouseEnter={() => setShowNavbar(true)}
-        onMouseLeave={() => setShowNavbar(false)}
-      />
-      
-      {/* Hover Navbar */}
-      <nav 
-        className={`hover-navbar ${showNavbar ? 'show' : ''}`}
-        onMouseEnter={() => setShowNavbar(true)}
-        onMouseLeave={() => setShowNavbar(false)}
-      >
-        <div className="container">
-          <div className="nav-links">
-            <a href="#" className="nav-link">📊 Dashboard</a>
-            <a href="#" className="nav-link">📝 Notlar</a>
-            <a href="#" className="nav-link">✅ Görevler</a>
-            <a href="/donanim" className="nav-link">
-              <Monitor className="inline-block w-4 h-4 mr-1" />
-              Donanım
-            </a>
-            <a href="#" className="nav-link">📈 Raporlar</a>
-            <a href="#" className="nav-link">⚙️ Ayarlar</a>
-            <a href="#" className="nav-link">👥 Kullanıcılar</a>
-          </div>
-        </div>
-      </nav>
+
 
       {/* Bell Notification System */}
       <div className="bell-container">
