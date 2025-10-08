@@ -1175,14 +1175,14 @@ export default function Dashboard({ users }: DashboardProps) {
                         position: 'absolute',
                         top: '100%',
                         left: '0',
-                        zIndex: 1000,
-                        minWidth: '200px',
+                        zIndex: 9999,
+                        minWidth: '240px',
                         backgroundColor: 'white',
                         border: '1px solid rgba(0,0,0,0.1)',
                         borderRadius: '8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        padding: '8px 0',
-                        marginTop: '5px'
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                        padding: '12px 0',
+                        marginTop: '8px'
                       }}
                     >
                       <h6 className="dropdown-header" style={{ 
@@ -1191,20 +1191,84 @@ export default function Dashboard({ users }: DashboardProps) {
                         textTransform: 'uppercase',
                         fontSize: '0.75rem',
                         letterSpacing: '1px',
-                        color: '#4a5568'
+                        color: '#4a5568',
+                        padding: '8px 16px'
                       }}>
-                        🛠️ Geliştirme Araçları
+                        🛠️ Hızlı Araçlar
                       </h6>
                       
                       <button 
                         className="dropdown-item d-flex align-items-center"
                         onClick={() => {
                           setShowToolsDropdown(false);
-                          // TODO: Hesap makinesi uygulamasına yönlendir
-                          alert('Hesap Makinesi - Yakında!');
+                          const newWindow = window.open('', '_blank', 'width=400,height=600');
+                          newWindow?.document.write(`
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                              <title>Hesap Makinesi</title>
+                              <style>
+                                body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+                                .calculator { max-width: 300px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+                                .display { width: 100%; height: 60px; font-size: 24px; text-align: right; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; }
+                                .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+                                .btn { height: 50px; font-size: 18px; border: none; border-radius: 5px; cursor: pointer; background: #48cab2; color: white; }
+                                .btn:hover { background: #3ba896; }
+                                .btn.operator { background: #ff6b6b; }
+                                .btn.operator:hover { background: #ff5252; }
+                              </style>
+                            </head>
+                            <body>
+                              <div class="calculator">
+                                <h2 style="text-align: center; color: #333;">💻 Hesap Makinesi</h2>
+                                <input type="text" class="display" id="display" readonly>
+                                <div class="buttons">
+                                  <button class="btn" onclick="clearDisplay()">C</button>
+                                  <button class="btn" onclick="deleteLast()">⌫</button>
+                                  <button class="btn operator" onclick="addToDisplay('/')">/</button>
+                                  <button class="btn operator" onclick="addToDisplay('*')">×</button>
+                                  <button class="btn" onclick="addToDisplay('7')">7</button>
+                                  <button class="btn" onclick="addToDisplay('8')">8</button>
+                                  <button class="btn" onclick="addToDisplay('9')">9</button>
+                                  <button class="btn operator" onclick="addToDisplay('-')">-</button>
+                                  <button class="btn" onclick="addToDisplay('4')">4</button>
+                                  <button class="btn" onclick="addToDisplay('5')">5</button>
+                                  <button class="btn" onclick="addToDisplay('6')">6</button>
+                                  <button class="btn operator" onclick="addToDisplay('+')">+</button>
+                                  <button class="btn" onclick="addToDisplay('1')">1</button>
+                                  <button class="btn" onclick="addToDisplay('2')">2</button>
+                                  <button class="btn" onclick="addToDisplay('3')">3</button>
+                                  <button class="btn operator" onclick="calculate()" rowspan="2">=</button>
+                                  <button class="btn" onclick="addToDisplay('0')" style="grid-column: span 2;">0</button>
+                                  <button class="btn" onclick="addToDisplay('.')">.</button>
+                                </div>
+                              </div>
+                              <script>
+                                function addToDisplay(value) {
+                                  document.getElementById('display').value += value;
+                                }
+                                function clearDisplay() {
+                                  document.getElementById('display').value = '';
+                                }
+                                function deleteLast() {
+                                  const display = document.getElementById('display');
+                                  display.value = display.value.slice(0, -1);
+                                }
+                                function calculate() {
+                                  try {
+                                    const result = eval(document.getElementById('display').value.replace(/×/g, '*'));
+                                    document.getElementById('display').value = result;
+                                  } catch(e) {
+                                    alert('Hata: Geçersiz işlem');
+                                  }
+                                }
+                              </script>
+                            </body>
+                            </html>
+                          `);
                         }}
                         style={{
-                          padding: '8px 16px',
+                          padding: '10px 16px',
                           border: 'none',
                           backgroundColor: 'transparent',
                           width: '100%',
@@ -1215,18 +1279,29 @@ export default function Dashboard({ users }: DashboardProps) {
                         onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
                         onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
-                        <Calculator className="me-2" size={16} color="#48cab2" />
-                        Hesap Makinesi
+                        <Calculator className="me-2" size={18} color="#48cab2" />
+                        <div>
+                          <div style={{ fontWeight: '600' }}>Hesap Makinesi</div>
+                          <small style={{ color: '#6c757d' }}>Bilimsel hesaplama</small>
+                        </div>
                       </button>
 
                       <button 
                         className="dropdown-item d-flex align-items-center"
                         onClick={() => {
                           setShowToolsDropdown(false);
-                          alert('Takvim Uygulaması - Yakında!');
+                          const note = prompt('📝 Hızlı Not:', '');
+                          if (note) {
+                            const timestamp = new Date().toLocaleString('tr-TR');
+                            localStorage.setItem('quickNote_' + Date.now(), JSON.stringify({
+                              content: note,
+                              timestamp: timestamp
+                            }));
+                            alert('✅ Notunuz kaydedildi! (' + timestamp + ')');
+                          }
                         }}
                         style={{
-                          padding: '8px 16px',
+                          padding: '10px 16px',
                           border: 'none',
                           backgroundColor: 'transparent',
                           width: '100%',
@@ -1237,18 +1312,23 @@ export default function Dashboard({ users }: DashboardProps) {
                         onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
                         onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
-                        <Calendar className="me-2" size={16} color="#48cab2" />
-                        Takvim Uygulaması
+                        <FileText className="me-2" size={18} color="#48cab2" />
+                        <div>
+                          <div style={{ fontWeight: '600' }}>Hızlı Not</div>
+                          <small style={{ color: '#6c757d' }}>Anında not al</small>
+                        </div>
                       </button>
 
                       <button 
                         className="dropdown-item d-flex align-items-center"
                         onClick={() => {
                           setShowToolsDropdown(false);
-                          alert('Veritabanı Yöneticisi - Yakında!');
+                          const color = '#' + Math.floor(Math.random()*16777215).toString(16);
+                          navigator.clipboard.writeText(color);
+                          alert('🎨 Rastgele renk kopyalandı: ' + color);
                         }}
                         style={{
-                          padding: '8px 16px',
+                          padding: '10px 16px',
                           border: 'none',
                           backgroundColor: 'transparent',
                           width: '100%',
@@ -1259,8 +1339,50 @@ export default function Dashboard({ users }: DashboardProps) {
                         onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
                         onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
-                        <Database className="me-2" size={16} color="#48cab2" />
-                        DB Yöneticisi
+                        <div className="me-2" style={{
+                          width: '18px', 
+                          height: '18px', 
+                          borderRadius: '50%',
+                          background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4)'
+                        }}></div>
+                        <div>
+                          <div style={{ fontWeight: '600' }}>Renk Üretici</div>
+                          <small style={{ color: '#6c757d' }}>Rastgele hex renk</small>
+                        </div>
+                      </button>
+
+                      <button 
+                        className="dropdown-item d-flex align-items-center"
+                        onClick={() => {
+                          setShowToolsDropdown(false);
+                          const text = prompt('🔤 Metni dönüştür:', '');
+                          if (text) {
+                            const options = [
+                              '🔤 BÜYÜK HARF: ' + text.toUpperCase(),
+                              '🔡 küçük harf: ' + text.toLowerCase(),
+                              '🔠 Başlık Formatı: ' + text.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()),
+                              '🔄 tErS: ' + text.split('').map(c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase()).join('')
+                            ];
+                            alert(options.join('\n\n'));
+                          }
+                        }}
+                        style={{
+                          padding: '10px 16px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          width: '100%',
+                          textAlign: 'left',
+                          fontFamily: 'Alumni Sans, sans-serif',
+                          fontSize: '0.85rem'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <span className="me-2" style={{ fontSize: '18px' }}>🔤</span>
+                        <div>
+                          <div style={{ fontWeight: '600' }}>Metin Dönüştürücü</div>
+                          <small style={{ color: '#6c757d' }}>Büyük/küçük harf</small>
+                        </div>
                       </button>
 
                       <div className="dropdown-divider" style={{ margin: '8px 0', borderTop: '1px solid #e9ecef' }}></div>
