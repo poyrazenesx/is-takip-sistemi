@@ -159,21 +159,22 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(20px);
           border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 16px;
-          padding: 20px;
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+          border-radius: 12px;
+          padding: 12px;
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
           font-family: 'Alumni Sans', sans-serif;
+          max-width: 300px;
         }
 
         .calendar-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 20px;
+          margin-bottom: 10px;
         }
 
         .calendar-title {
-          font-size: 1.4rem;
+          font-size: 1rem;
           font-weight: 700;
           color: #1a202c;
           margin: 0;
@@ -187,9 +188,9 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
         .nav-button {
           background: rgba(26, 32, 44, 0.1);
           border: none;
-          border-radius: 8px;
-          width: 36px;
-          height: 36px;
+          border-radius: 6px;
+          width: 28px;
+          height: 28px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -207,9 +208,9 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
           background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
           color: white;
           border: none;
-          border-radius: 8px;
-          padding: 6px 12px;
-          font-size: 0.85rem;
+          border-radius: 6px;
+          padding: 4px 8px;
+          font-size: 0.7rem;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s ease;
@@ -228,8 +229,8 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
 
         .weekday {
           text-align: center;
-          padding: 8px 4px;
-          font-size: 0.8rem;
+          padding: 4px 2px;
+          font-size: 0.65rem;
           font-weight: 600;
           color: #718096;
           text-transform: uppercase;
@@ -242,13 +243,13 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          border-radius: 8px;
+          border-radius: 4px;
           cursor: pointer;
           position: relative;
           transition: all 0.2s ease;
-          font-size: 0.9rem;
+          font-size: 0.7rem;
           font-weight: 500;
-          min-height: 40px;
+          min-height: 28px;
         }
 
         .calendar-day:hover {
@@ -289,12 +290,12 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
         }
 
         .day-number {
-          font-size: 0.9rem;
+          font-size: 0.7rem;
           font-weight: 600;
         }
 
         .day-icon {
-          font-size: 0.7rem;
+          font-size: 0.5rem;
           margin-top: 1px;
         }
 
@@ -338,19 +339,30 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
 
         @media (max-width: 768px) {
           .calendar-widget {
-            padding: 16px;
+            padding: 8px;
+            max-width: 250px;
           }
           
           .calendar-title {
-            font-size: 1.2rem;
+            font-size: 0.85rem;
           }
           
           .calendar-day {
-            min-height: 35px;
-            font-size: 0.8rem;
+            min-height: 24px;
+            font-size: 0.6rem;
           }
           
           .day-icon {
+            font-size: 0.4rem;
+          }
+          
+          .nav-button {
+            width: 24px;
+            height: 24px;
+          }
+          
+          .today-button {
+            padding: 2px 6px;
             font-size: 0.6rem;
           }
         }
@@ -367,7 +379,7 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
             onClick={() => navigateMonth('prev')}
             title="Önceki Ay"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={12} />
           </button>
           <button 
             className="today-button"
@@ -381,7 +393,7 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
             onClick={() => navigateMonth('next')}
             title="Sonraki Ay"
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={12} />
           </button>
         </div>
       </div>
@@ -413,33 +425,7 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
         })}
       </div>
 
-      {/* Bu Ayki Özel Günler */}
-      {(() => {
-        const currentMonthSpecialDays = specialDays.filter(day => {
-          const dayDate = new Date(day.date);
-          return dayDate.getMonth() === month && dayDate.getFullYear() === year;
-        });
 
-        if (currentMonthSpecialDays.length === 0) return null;
-
-        return (
-          <div className="special-days-list">
-            <div className="special-days-title">
-              <Star size={16} />
-              Bu Ayki Özel Günler
-            </div>
-            {currentMonthSpecialDays.map((day, index) => (
-              <div key={index} className="special-day-item">
-                <span className="day-icon">{day.icon}</span>
-                <span className="special-day-date">
-                  {new Date(day.date).getDate()}
-                </span>
-                <span className="special-day-title">{day.title}</span>
-              </div>
-            ))}
-          </div>
-        );
-      })()}
     </div>
   );
 };
