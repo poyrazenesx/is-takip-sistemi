@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Task, User, Hardware } from '@/types';
 import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor, Eye } from 'lucide-react';
 import Notes from '@/components/Notes';
-import MiniCalendar from '@/components/MiniCalendar';
 
 
 interface DashboardProps {
@@ -1119,8 +1118,8 @@ export default function Dashboard({ users }: DashboardProps) {
                 </h5>
                 <p className="text-muted small mb-0">Hastane Bilgi İşlem Sistemi</p>
               </div>
-              <div className="col-lg-3 col-md-2 col-sm-6 d-flex justify-content-center align-items-center">
-                <MiniCalendar />
+              <div className="col-lg-3 col-md-2 col-sm-6">
+                {/* Takvim alanı kaldırıldı */}
               </div>
               <div className="col-lg-3 col-md-3 col-sm-6 text-end">
 
