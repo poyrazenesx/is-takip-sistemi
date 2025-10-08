@@ -1143,16 +1143,16 @@ export default function Dashboard({ users }: DashboardProps) {
         <header className="header-card">
           <div className="container">
             <div className="row align-items-center py-4">
-              <div className="col-lg-6 col-md-7 col-sm-12">
+              <div className="col-lg-5 col-md-6 col-sm-12">
                 <h1 className="gradient-text fw-bold fs-2 mb-2">İş Takip Sistemi</h1>
                 <h5 className="text-muted mb-0">
                   Hoş geldin, <span className="fw-bold text-welcome">{user?.name}</span> 👋
                 </h5>
                 <p className="text-muted small mb-0">Hastane Bilgi İşlem Sistemi</p>
               </div>
-              <div className="col-lg-3 col-md-2 col-sm-6 d-flex justify-content-center">
+              <div className="col-lg-2 col-md-2 col-sm-6 d-flex justify-content-center">
                 {/* Araçlar Dropdown */}
-                <div className="dropdown" style={{ position: 'relative', zIndex: 999998 }}>
+                <div className="dropdown" style={{ position: 'relative', zIndex: 1050 }}>
                   <button
                     className="btn btn-outline-secondary dropdown-toggle d-flex align-items-center tools-dropdown-btn"
                     onClick={() => setShowToolsDropdown(!showToolsDropdown)}
@@ -1183,16 +1183,15 @@ export default function Dashboard({ users }: DashboardProps) {
                     <div 
                       className="dropdown-menu show tools-dropdown-menu"
                       style={{
-                        position: 'fixed',
-                        top: '80px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        zIndex: 999999,
+                        position: 'absolute',
+                        top: '100%',
+                        left: '-50px',
+                        zIndex: 99999,
                         minWidth: '260px',
                         backgroundColor: 'white',
                         border: '1px solid rgba(0,0,0,0.1)',
                         borderRadius: '12px',
-                        boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+                        boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
                         padding: '15px 0',
                         marginTop: '8px'
                       }}
@@ -1424,44 +1423,57 @@ export default function Dashboard({ users }: DashboardProps) {
                   )}
                 </div>
               </div>
-              <div className="col-lg-3 col-md-3 col-sm-6 text-end">
+              <div className="col-lg-5 col-md-4 col-sm-6 text-end">
+                <div className="d-flex flex-wrap gap-2 justify-content-end">
+                  <button
+                    onClick={() => setShowTaskForm(true)}
+                    className="btn gradient-btn text-white btn-sm"
+                    style={{ 
+                      fontFamily: 'Alumni Sans, sans-serif',
+                      fontWeight: '600',
+                      fontSize: '0.85rem'
+                    }}
+                  >
+                    <Plus className="me-1" size={16} />
+                    Yeni Görev
+                  </button>
 
-                <button
-                  onClick={() => setShowTaskForm(true)}
-                  className="btn gradient-btn text-white me-2"
-                >
-                  <Plus className="me-2" size={18} />
-                  Yeni Görev
-                </button>
+                  <button
+                    onClick={() => setShowHardwareForm(true)}
+                    className="btn btn-outline-secondary btn-sm"
+                    style={{
+                      borderColor: '#1a202c',
+                      color: '#1a202c',
+                      fontWeight: '600',
+                      fontFamily: 'Alumni Sans, sans-serif',
+                      fontSize: '0.85rem'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = '#1a202c';
+                      e.currentTarget.style.color = 'white';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = '#1a202c';
+                    }}
+                  >
+                    <Monitor className="me-1" size={16} />
+                    Donanım
+                  </button>
 
-                <button
-                  onClick={() => setShowHardwareForm(true)}
-                  className="btn btn-outline-primary me-2"
-                  style={{
-                    borderColor: '#1a202c',
-                    color: '#1a202c',
-                    fontWeight: '600'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = '#1a202c';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = '#1a202c';
-                  }}
-                >
-                  <Monitor className="me-2" size={18} />
-                  YENİ DONANIM EKLE
-                </button>
-
-                <button
-                  onClick={logout}
-                  className="btn logout-btn text-white"
-                >
-                  <LogOut className="me-2" size={18} />
-                  Çıkış
-                </button>
+                  <button
+                    onClick={logout}
+                    className="btn logout-btn text-white btn-sm"
+                    style={{
+                      fontFamily: 'Alumni Sans, sans-serif',
+                      fontWeight: '600',
+                      fontSize: '0.85rem'
+                    }}
+                  >
+                    <LogOut className="me-1" size={16} />
+                    Çıkış
+                  </button>
+                </div>
               </div>
             </div>
           </div>
