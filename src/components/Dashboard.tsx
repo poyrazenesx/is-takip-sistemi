@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User, Hardware } from '@/types';
-import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor, Eye } from 'lucide-react';
+import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor, Eye, List, Columns, Calendar, BarChart3 } from 'lucide-react';
 import Notes from '@/components/Notes';
 
 
@@ -21,6 +21,7 @@ export default function Dashboard({ users }: DashboardProps) {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [activeTab, setActiveTab] = useState<'tasks' | 'notes' | 'hardware'>('tasks');
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'calendar' | 'timeline'>('list');
   
   // Hardware modal states
   const [showHardwareForm, setShowHardwareForm] = useState(false);
@@ -1018,6 +1019,78 @@ export default function Dashboard({ users }: DashboardProps) {
           box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
+        /* Kanban Board Styles */
+        .kanban-board {
+          padding: 20px 0;
+        }
+        
+        .kanban-column {
+          background: rgba(255, 255, 255, 0.95);
+          border-radius: 15px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        
+        .kanban-header {
+          padding: 15px 20px;
+          border-radius: 15px 15px 0 0;
+        }
+        
+        .todo-header {
+          background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+        }
+        
+        .in-progress-header {
+          background: linear-gradient(135deg, #4285f4 0%, #1976d2 100%);
+        }
+        
+        .completed-header {
+          background: linear-gradient(135deg, #34a853 0%, #137333 100%);
+        }
+        
+        .kanban-content {
+          padding: 20px;
+          min-height: 400px;
+          max-height: 600px;
+          overflow-y: auto;
+        }
+        
+        .kanban-card {
+          background: white;
+          border-radius: 12px;
+          padding: 16px;
+          margin-bottom: 12px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s ease;
+          cursor: pointer;
+          border: 2px solid transparent;
+        }
+        
+        .kanban-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+          border-color: #1a202c;
+        }
+        
+        .completed-card {
+          background: linear-gradient(135deg, #f0fff4 0%, #dcfce7 100%);
+        }
+        
+        .priority-badge {
+          font-size: 16px;
+          font-weight: bold;
+        }
+        
+        .kanban-card h6 {
+          font-size: 14px;
+          line-height: 1.4;
+        }
+        
+        .kanban-card p {
+          font-size: 12px;
+          line-height: 1.3;
+        }
+
         @media (max-width: 768px) {
           .useful-link-card {
             margin-bottom: 1rem;
@@ -1280,6 +1353,40 @@ export default function Dashboard({ users }: DashboardProps) {
                       color: '#333'
                     }}
                   />
+                  
+                  {/* View Mode Selector */}
+                  {activeTab === 'tasks' && (
+                    <div className="d-flex gap-2 ms-auto">
+                      <button
+                        className={`btn btn-sm ${viewMode === 'list' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => setViewMode('list')}
+                        title="Liste Görünümü"
+                      >
+                        <List size={16} />
+                      </button>
+                      <button
+                        className={`btn btn-sm ${viewMode === 'kanban' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => setViewMode('kanban')}
+                        title="Kanban Görünümü"
+                      >
+                        <Columns size={16} />
+                      </button>
+                      <button
+                        className={`btn btn-sm ${viewMode === 'calendar' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => setViewMode('calendar')}
+                        title="Takvim Görünümü"
+                      >
+                        <Calendar size={16} />
+                      </button>
+                      <button
+                        className={`btn btn-sm ${viewMode === 'timeline' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => setViewMode('timeline')}
+                        title="Zaman Çizelgesi"
+                      >
+                        <BarChart3 size={16} />
+                      </button>
+                    </div>
+                  )}
                   {searchTerm && (
                     <button
                       className="btn btn-sm btn-outline-secondary"
@@ -1391,6 +1498,128 @@ export default function Dashboard({ users }: DashboardProps) {
                   <Plus className="me-2" size={18} />
                   İlk Görevimi Oluştur 🚀
                 </button>
+              </div>
+            ) : viewMode === 'kanban' ? (
+              /* Kanban Board View */
+              <div className="kanban-board">
+                <div className="row g-3">
+                  {/* Todo Column */}
+                  <div className="col-lg-4 col-md-6">
+                    <div className="kanban-column">
+                      <div className="kanban-header todo-header">
+                        <h5 className="mb-0 fw-bold text-white">
+                          <Clock size={18} className="me-2" />
+                          Yapılacak ({filteredTasks.filter(t => t.status === 'todo').length})
+                        </h5>
+                      </div>
+                      <div className="kanban-content">
+                        {filteredTasks.filter(task => task.status === 'todo').map(task => (
+                          <div key={task.id} className="kanban-card">
+                            <div className="d-flex justify-content-between align-items-start mb-2">
+                              <h6 className="fw-bold text-dark mb-1">{task.title}</h6>
+                              <span className={`priority-badge ${task.priority || 'medium'}`}>
+                                {task.priority === 'high' ? '🔴' : task.priority === 'low' ? '🟢' : '🟡'}
+                              </span>
+                            </div>
+                            <p className="text-muted small mb-2">{task.description}</p>
+                            <div className="d-flex justify-content-between align-items-center">
+                              <small className="text-muted">
+                                👤 {getUserName(task.assignedTo)}
+                              </small>
+                              <div className="d-flex gap-1">
+                                <button
+                                  onClick={() => handleEditTask(task)}
+                                  className="btn btn-sm btn-outline-primary"
+                                  title="Düzenle"
+                                >
+                                  <Eye size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* In Progress Column */}
+                  <div className="col-lg-4 col-md-6">
+                    <div className="kanban-column">
+                      <div className="kanban-header in-progress-header">
+                        <h5 className="mb-0 fw-bold text-white">
+                          <AlertCircle size={18} className="me-2" />
+                          Devam Eden ({filteredTasks.filter(t => t.status === 'in-progress').length})
+                        </h5>
+                      </div>
+                      <div className="kanban-content">
+                        {filteredTasks.filter(task => task.status === 'in-progress').map(task => (
+                          <div key={task.id} className="kanban-card">
+                            <div className="d-flex justify-content-between align-items-start mb-2">
+                              <h6 className="fw-bold text-dark mb-1">{task.title}</h6>
+                              <span className={`priority-badge ${task.priority || 'medium'}`}>
+                                {task.priority === 'high' ? '🔴' : task.priority === 'low' ? '🟢' : '🟡'}
+                              </span>
+                            </div>
+                            <p className="text-muted small mb-2">{task.description}</p>
+                            <div className="d-flex justify-content-between align-items-center">
+                              <small className="text-muted">
+                                👤 {getUserName(task.assignedTo)}
+                              </small>
+                              <div className="d-flex gap-1">
+                                <button
+                                  onClick={() => handleEditTask(task)}
+                                  className="btn btn-sm btn-outline-primary"
+                                  title="Düzenle"
+                                >
+                                  <Eye size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Completed Column */}
+                  <div className="col-lg-4 col-md-12">
+                    <div className="kanban-column">
+                      <div className="kanban-header completed-header">
+                        <h5 className="mb-0 fw-bold text-white">
+                          <CheckCircle size={18} className="me-2" />
+                          Tamamlanan ({filteredTasks.filter(t => t.status === 'completed').length})
+                        </h5>
+                      </div>
+                      <div className="kanban-content">
+                        {filteredTasks.filter(task => task.status === 'completed').map(task => (
+                          <div key={task.id} className="kanban-card completed-card">
+                            <div className="d-flex justify-content-between align-items-start mb-2">
+                              <h6 className="fw-bold text-success mb-1">{task.title}</h6>
+                              <span className={`priority-badge ${task.priority || 'medium'}`}>
+                                {task.priority === 'high' ? '🔴' : task.priority === 'low' ? '🟢' : '🟡'}
+                              </span>
+                            </div>
+                            <p className="text-muted small mb-2">{task.description}</p>
+                            <div className="d-flex justify-content-between align-items-center">
+                              <small className="text-success">
+                                👤 {getUserName(task.assignedTo)} ✅
+                              </small>
+                              <div className="d-flex gap-1">
+                                <button
+                                  onClick={() => handleEditTask(task)}
+                                  className="btn btn-sm btn-outline-primary"
+                                  title="Düzenle"
+                                >
+                                  <Eye size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="table-responsive">
