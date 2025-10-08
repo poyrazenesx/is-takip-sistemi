@@ -65,8 +65,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    // Veri doğrulama
-    const requiredFields = ['assignedPerson', 'department', 'service', 'deviceType']
+    // Veri doğrulama (sadece temel alanları kontrol et)
+    const requiredFields = ['device_type', 'make_model']
     for (const field of requiredFields) {
       if (!body[field]) {
         return NextResponse.json({ error: `${field} is required` }, { status: 400 })
@@ -75,21 +75,25 @@ export async function POST(request: NextRequest) {
 
     // Supabase için veri formatını hazırla
     const hardwareData = {
-      date: body.date || new Date().toISOString().split('T')[0],
-      assigned_person: body.assignedPerson,
-      department: body.department,
-      service: body.service,
-      device_type: body.deviceType,
-      tag_number: body.tagNumber || null,
-      fault_description: body.faultDescription || null,
-      work_done: body.workDone || null,
-      spare_part_used: body.sparePartUsed || false,
-      spare_part_name: body.sparePartName || null,
-      duration: body.duration || 0,
+      device_type: body.device_type,
+      make_model: body.make_model, // Yapılan işlem
+      serial_number: body.serial_number || '',
+      asset_tag: body.asset_tag || '',
+      location: body.location || '',
+      department: body.department || '',
+      assigned_to: body.assigned_to || '',
       status: body.status || 'Tamamlandı',
-      notes: body.notes || null,
-      next_check_date: body.nextCheckDate || null,
-      service_return_date: body.serviceReturnDate || null
+      purchase_date: body.purchase_date || new Date().toISOString().split('T')[0],
+      warranty_expiry: body.warranty_expiry || null,
+      processor: body.processor || '',
+      memory_gb: body.memory_gb || 0,
+      storage_gb: body.storage_gb || 0,
+      operating_system: body.operating_system || '',
+      ip_address: body.ip_address || '',
+      mac_address: body.mac_address || '',
+      notes: body.notes || '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }
 
     const { data, error } = await supabase

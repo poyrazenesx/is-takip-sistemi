@@ -27,22 +27,11 @@ export default function Dashboard({ users }: DashboardProps) {
   const [showHardwareForm, setShowHardwareForm] = useState(false);
   const [editingHardware, setEditingHardware] = useState<Hardware | null>(null);
   const [hardwareForm, setHardwareForm] = useState<Partial<Hardware>>({
-    device_type: '',
-    make_model: '',
-    serial_number: '',
-    asset_tag: '',
-    location: '',
-    department: '',
-    assigned_to: '',
+    device_type: 'Bilgisayar',
+    make_model: '', // Yapılan İşlem olarak kullanacağız
     status: 'Aktif',
     purchase_date: '',
-    warranty_expiry: '',
-    processor: '',
-    memory_gb: 0,
-    storage_gb: 0,
-    operating_system: '',
     ip_address: '',
-    mac_address: '',
     notes: ''
   });
   
@@ -171,22 +160,11 @@ export default function Dashboard({ users }: DashboardProps) {
   // Hardware form functions
   const resetHardwareForm = () => {
     setHardwareForm({
-      device_type: '',
-      make_model: '',
-      serial_number: '',
-      asset_tag: '',
-      location: '',
-      department: '',
-      assigned_to: '',
+      device_type: 'Bilgisayar',
+      make_model: '', // Yapılan İşlem
       status: 'Aktif',
       purchase_date: '',
-      warranty_expiry: '',
-      processor: '',
-      memory_gb: 0,
-      storage_gb: 0,
-      operating_system: '',
       ip_address: '',
-      mac_address: '',
       notes: ''
     });
     setEditingHardware(null);
@@ -1623,11 +1601,11 @@ export default function Dashboard({ users }: DashboardProps) {
                   <table className="table table-hover mb-0">
                     <thead>
                       <tr style={{backgroundColor: 'rgba(102, 126, 234, 0.05)'}}>
-                        <th className="border-0 fw-bold text-uppercase small ps-4 py-3">🖥️ Cihaz</th>
-                        <th className="border-0 fw-bold text-uppercase small py-3">📍 Konum</th>
-                        <th className="border-0 fw-bold text-uppercase small py-3">👤 Kullanıcı</th>
+                        <th className="border-0 fw-bold text-uppercase small ps-4 py-3">🖥️ Cihaz Türü</th>
+                        <th className="border-0 fw-bold text-uppercase small py-3">� Yapılan İşlem</th>
+                        <th className="border-0 fw-bold text-uppercase small py-3">� Tarih</th>
                         <th className="border-0 fw-bold text-uppercase small py-3">📊 Durum</th>
-                        <th className="border-0 fw-bold text-uppercase small pe-4 py-3">🔧 İşlemler</th>
+                        <th className="border-0 fw-bold text-uppercase small pe-4 py-3">⚙️ İşlemler</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1643,29 +1621,32 @@ export default function Dashboard({ users }: DashboardProps) {
                         .map((item) => (
                         <tr key={item?.id || Math.random()} style={{borderBottom: '1px solid rgba(0,0,0,0.05)'}}>
                           <td className="border-0 ps-4 py-4">
-                            <div>
-                              <h6 className="fw-bold mb-1 text-dark">{item?.device_type || 'N/A'}</h6>
-                              <p className="text-muted small mb-0 bg-light rounded-pill px-3 py-1 d-inline-block">
-                                {item?.make_model || 'N/A'}
-                              </p>
-                            </div>
-                          </td>
-                          <td className="border-0 py-4">
-                            <div>
-                              <span className="fw-semibold text-dark">{item?.location || 'N/A'}</span>
-                              {item?.department && (
-                                <p className="text-muted small mb-0">{item.department}</p>
+                            <div className="d-flex align-items-center">
+                              <span className="fw-bold text-dark">{item?.device_type || 'N/A'}</span>
+                              {item?.ip_address && (
+                                <span className="badge bg-light text-dark ms-2 small">{item.ip_address}</span>
                               )}
                             </div>
                           </td>
                           <td className="border-0 py-4">
-                            <span className="fw-semibold text-dark">{item?.assigned_to || 'N/A'}</span>
+                            <div style={{maxWidth: '300px'}}>
+                              <p className="mb-0 text-dark">{item?.make_model || 'N/A'}</p>
+                              {item?.notes && (
+                                <small className="text-muted d-block mt-1">{item.notes.substring(0, 50)}...</small>
+                              )}
+                            </div>
+                          </td>
+                          <td className="border-0 py-4">
+                            <span className="fw-semibold text-dark">
+                              {item?.purchase_date ? new Date(item.purchase_date).toLocaleDateString('tr-TR') : 'N/A'}
+                            </span>
                           </td>
                           <td className="border-0 py-4">
                             <span className={`status-badge ${
-                              item?.status === 'Aktif' ? 'bg-success' : 
-                              item?.status === 'Bakımda' ? 'bg-warning' : 
-                              item?.status === 'Arızalı' ? 'bg-danger' : 'bg-secondary'
+                              item?.status === 'Tamamlandı' ? 'bg-success' : 
+                              item?.status === 'Devam Ediyor' ? 'bg-primary' : 
+                              item?.status === 'Beklemede' ? 'bg-warning' : 
+                              item?.status === 'İptal' ? 'bg-danger' : 'bg-secondary'
                             } text-white`}>
                               {item?.status || 'N/A'}
                             </span>
@@ -1832,80 +1813,32 @@ export default function Dashboard({ users }: DashboardProps) {
                     <div className="col-md-6">
                       <div className="mb-3">
                         <label className="form-label fw-bold">Cihaz Türü *</label>
-                        <input
-                          type="text"
+                        <select
                           required
-                          value={hardwareForm.device_type || ''}
+                          value={hardwareForm.device_type || 'Bilgisayar'}
                           onChange={(e) => setHardwareForm({ ...hardwareForm, device_type: e.target.value })}
-                          className="form-control"
-                          placeholder="Bilgisayar, Yazıcı, Router vb."
-                        />
+                          className="form-select"
+                        >
+                          <option value="Bilgisayar">Bilgisayar</option>
+                          <option value="Yazıcı">Yazıcı</option>
+                          <option value="Router">Router</option>
+                          <option value="Switch">Switch</option>
+                          <option value="Telefon">Telefon</option>
+                          <option value="Monitör">Monitör</option>
+                          <option value="Sunucu">Sunucu</option>
+                          <option value="Diğer">Diğer</option>
+                        </select>
                       </div>
                       
                       <div className="mb-3">
-                        <label className="form-label fw-bold">Marka/Model *</label>
-                        <input
-                          type="text"
+                        <label className="form-label fw-bold">Yapılan İşlem *</label>
+                        <textarea
                           required
                           value={hardwareForm.make_model || ''}
                           onChange={(e) => setHardwareForm({ ...hardwareForm, make_model: e.target.value })}
+                          rows={3}
                           className="form-control"
-                          placeholder="HP EliteBook 840, Canon LBP6230 vb."
-                        />
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">Seri Numarası</label>
-                        <input
-                          type="text"
-                          value={hardwareForm.serial_number || ''}
-                          onChange={(e) => setHardwareForm({ ...hardwareForm, serial_number: e.target.value })}
-                          className="form-control"
-                          placeholder="Cihazın seri numarası"
-                        />
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">Asset Tag</label>
-                        <input
-                          type="text"
-                          value={hardwareForm.asset_tag || ''}
-                          onChange={(e) => setHardwareForm({ ...hardwareForm, asset_tag: e.target.value })}
-                          className="form-control"
-                          placeholder="Hastane envanter numarası"
-                        />
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">Konum</label>
-                        <input
-                          type="text"
-                          value={hardwareForm.location || ''}
-                          onChange={(e) => setHardwareForm({ ...hardwareForm, location: e.target.value })}
-                          className="form-control"
-                          placeholder="Oda numarası, bina vb."
-                        />
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">Departman</label>
-                        <input
-                          type="text"
-                          value={hardwareForm.department || ''}
-                          onChange={(e) => setHardwareForm({ ...hardwareForm, department: e.target.value })}
-                          className="form-control"
-                          placeholder="Bilgi İşlem, Muhasebe vb."
-                        />
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">Kullanıcı</label>
-                        <input
-                          type="text"
-                          value={hardwareForm.assigned_to || ''}
-                          onChange={(e) => setHardwareForm({ ...hardwareForm, assigned_to: e.target.value })}
-                          className="form-control"
-                          placeholder="Cihazı kullanan kişi"
+                          placeholder="Ne işlemi yapıldı? (Kurulum, Bakım, Onarım vb.)"
                         />
                       </div>
                       
@@ -1916,78 +1849,23 @@ export default function Dashboard({ users }: DashboardProps) {
                           onChange={(e) => setHardwareForm({ ...hardwareForm, status: e.target.value })}
                           className="form-select"
                         >
-                          <option value="Aktif">Aktif</option>
-                          <option value="Bakımda">Bakımda</option>
-                          <option value="Arızalı">Arızalı</option>
-                          <option value="Depo">Depo</option>
-                          <option value="Emekli">Emekli</option>
+                          <option value="Tamamlandı">Tamamlandı</option>
+                          <option value="Devam Ediyor">Devam Ediyor</option>
+                          <option value="Beklemede">Beklemede</option>
+                          <option value="İptal">İptal</option>
                         </select>
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">Satın Alma Tarihi</label>
-                        <input
-                          type="date"
-                          value={hardwareForm.purchase_date || ''}
-                          onChange={(e) => setHardwareForm({ ...hardwareForm, purchase_date: e.target.value })}
-                          className="form-control"
-                        />
                       </div>
                     </div>
                     
                     {/* Sağ Kolon */}
                     <div className="col-md-6">
                       <div className="mb-3">
-                        <label className="form-label fw-bold">Garanti Bitiş Tarihi</label>
+                        <label className="form-label fw-bold">Tarih</label>
                         <input
                           type="date"
-                          value={hardwareForm.warranty_expiry || ''}
-                          onChange={(e) => setHardwareForm({ ...hardwareForm, warranty_expiry: e.target.value })}
+                          value={hardwareForm.purchase_date || new Date().toISOString().split('T')[0]}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, purchase_date: e.target.value })}
                           className="form-control"
-                        />
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">İşlemci</label>
-                        <input
-                          type="text"
-                          value={hardwareForm.processor || ''}
-                          onChange={(e) => setHardwareForm({ ...hardwareForm, processor: e.target.value })}
-                          className="form-control"
-                          placeholder="Intel i5-8250U, AMD Ryzen 5 vb."
-                        />
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">RAM (GB)</label>
-                        <input
-                          type="number"
-                          value={hardwareForm.memory_gb || 0}
-                          onChange={(e) => setHardwareForm({ ...hardwareForm, memory_gb: parseInt(e.target.value) || 0 })}
-                          className="form-control"
-                          placeholder="8, 16, 32 vb."
-                        />
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">Depolama (GB)</label>
-                        <input
-                          type="number"
-                          value={hardwareForm.storage_gb || 0}
-                          onChange={(e) => setHardwareForm({ ...hardwareForm, storage_gb: parseInt(e.target.value) || 0 })}
-                          className="form-control"
-                          placeholder="256, 512, 1000 vb."
-                        />
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="form-label fw-bold">İşletim Sistemi</label>
-                        <input
-                          type="text"
-                          value={hardwareForm.operating_system || ''}
-                          onChange={(e) => setHardwareForm({ ...hardwareForm, operating_system: e.target.value })}
-                          className="form-control"
-                          placeholder="Windows 11, Ubuntu 20.04 vb."
                         />
                       </div>
                       
@@ -2003,24 +1881,13 @@ export default function Dashboard({ users }: DashboardProps) {
                       </div>
                       
                       <div className="mb-3">
-                        <label className="form-label fw-bold">MAC Adresi</label>
-                        <input
-                          type="text"
-                          value={hardwareForm.mac_address || ''}
-                          onChange={(e) => setHardwareForm({ ...hardwareForm, mac_address: e.target.value })}
-                          className="form-control"
-                          placeholder="00:11:22:33:44:55"
-                        />
-                      </div>
-                      
-                      <div className="mb-3">
                         <label className="form-label fw-bold">Notlar</label>
                         <textarea
                           value={hardwareForm.notes || ''}
                           onChange={(e) => setHardwareForm({ ...hardwareForm, notes: e.target.value })}
-                          rows={4}
+                          rows={5}
                           className="form-control"
-                          placeholder="Ek bilgiler, özel notlar..."
+                          placeholder="Ek bilgiler, detaylar..."
                         />
                       </div>
                     </div>
