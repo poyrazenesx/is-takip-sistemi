@@ -126,11 +126,12 @@ export default function Dashboard({ users }: DashboardProps) {
     try {
       const response = await fetch('/api/hardware');
       if (response.ok) {
-        const data = await response.json();
-        setHardware(data || []);
+        const result = await response.json();
+        setHardware(result.data || []);
       }
     } catch (error) {
       console.error('Donanım verileri alınamadı:', error);
+      setHardware([]); // Hata durumunda boş array
     }
   };
 
@@ -1630,42 +1631,43 @@ export default function Dashboard({ users }: DashboardProps) {
                       </tr>
                     </thead>
                     <tbody>
-                      {hardware
+                      {(hardware || [])
                         .filter(item => {
                           if (!searchTerm) return true;
-                          return item.device_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                 item.make_model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                 item.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                 item.assigned_to.toLowerCase().includes(searchTerm.toLowerCase());
+                          const search = searchTerm.toLowerCase();
+                          return (item?.device_type || '').toLowerCase().includes(search) ||
+                                 (item?.make_model || '').toLowerCase().includes(search) ||
+                                 (item?.location || '').toLowerCase().includes(search) ||
+                                 (item?.assigned_to || '').toLowerCase().includes(search);
                         })
                         .map((item) => (
-                        <tr key={item.id} style={{borderBottom: '1px solid rgba(0,0,0,0.05)'}}>
+                        <tr key={item?.id || Math.random()} style={{borderBottom: '1px solid rgba(0,0,0,0.05)'}}>
                           <td className="border-0 ps-4 py-4">
                             <div>
-                              <h6 className="fw-bold mb-1 text-dark">{item.device_type}</h6>
+                              <h6 className="fw-bold mb-1 text-dark">{item?.device_type || 'N/A'}</h6>
                               <p className="text-muted small mb-0 bg-light rounded-pill px-3 py-1 d-inline-block">
-                                {item.make_model}
+                                {item?.make_model || 'N/A'}
                               </p>
                             </div>
                           </td>
                           <td className="border-0 py-4">
                             <div>
-                              <span className="fw-semibold text-dark">{item.location}</span>
-                              {item.department && (
+                              <span className="fw-semibold text-dark">{item?.location || 'N/A'}</span>
+                              {item?.department && (
                                 <p className="text-muted small mb-0">{item.department}</p>
                               )}
                             </div>
                           </td>
                           <td className="border-0 py-4">
-                            <span className="fw-semibold text-dark">{item.assigned_to}</span>
+                            <span className="fw-semibold text-dark">{item?.assigned_to || 'N/A'}</span>
                           </td>
                           <td className="border-0 py-4">
                             <span className={`status-badge ${
-                              item.status === 'Aktif' ? 'bg-success' : 
-                              item.status === 'Bakımda' ? 'bg-warning' : 
-                              item.status === 'Arızalı' ? 'bg-danger' : 'bg-secondary'
+                              item?.status === 'Aktif' ? 'bg-success' : 
+                              item?.status === 'Bakımda' ? 'bg-warning' : 
+                              item?.status === 'Arızalı' ? 'bg-danger' : 'bg-secondary'
                             } text-white`}>
-                              {item.status}
+                              {item?.status || 'N/A'}
                             </span>
                           </td>
                           <td className="border-0 py-4 pe-4">
