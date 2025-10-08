@@ -20,7 +20,6 @@ SUPABASE_SERVICE_ROLE_KEY=[Supabase service role key]
 
 ## 🔐 Giriş Bilgileri
 - **Admin:** `admin` / `admin123`
-- **Kullanıcılar:** `user1/user123`, `user2/user123`
 
 ## Özellikler
 
@@ -31,13 +30,11 @@ SUPABASE_SERVICE_ROLE_KEY=[Supabase service role key]
 - 🎨 **Modern Arayüz** - Responsive ve kullanıcı dostu tasarım
 - ⚡ **Gerçek Zamanlı** - Anlık güncellemeler
 
-## Test Kullanıcıları
+## Giriş
 
-Uygulamayı test etmek için aşağıdaki kullanıcıları kullanabilirsiniz:
+Sisteme giriş yapmak için:
 
-- **ahmet** / 123456 (Admin)
-- **fatma** / 123456 (Üye)  
-- **mehmet** / 123456 (Üye)
+- **admin** / admin123 (System Admin)
 
 ## Kurulum
 
@@ -59,7 +56,7 @@ Uygulamayı test etmek için aşağıdaki kullanıcıları kullanabilirsiniz:
 
 ## Kullanım
 
-1. **Giriş Yapın**: Test kullanıcılarından birini kullanarak giriş yapın
+1. **Giriş Yapın**: Admin hesabı ile giriş yapın
 2. **Dashboard**: Görev istatistiklerini ve genel durumu görün
 3. **Görev Ekleme**: "Yeni Görev" butonuna tıklayarak görev ekleyin
 4. **Görev Yönetimi**: Görevleri düzenleyin, durumunu değiştirin veya silin
