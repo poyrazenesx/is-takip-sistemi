@@ -1,5 +1,6 @@
 'use client';
 
+// Production Ready - Hospital IT Management System
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User, Hardware } from '@/types';
