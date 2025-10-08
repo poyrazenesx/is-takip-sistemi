@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Task, User } from '@/types';
+import { Task, User, Hardware } from '@/types';
 import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor } from 'lucide-react';
 import Notes from '@/components/Notes';
 
@@ -15,12 +15,36 @@ export default function Dashboard({ users }: DashboardProps) {
   const { user, logout } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [notes, setNotes] = useState<any[]>([]);
+  const [hardware, setHardware] = useState<Hardware[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [activeTab, setActiveTab] = useState<'tasks' | 'notes'>('tasks');
+  const [activeTab, setActiveTab] = useState<'tasks' | 'notes' | 'hardware'>('tasks');
   const [searchTerm, setSearchTerm] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+  
+  // Hardware modal states
+  const [showHardwareForm, setShowHardwareForm] = useState(false);
+  const [editingHardware, setEditingHardware] = useState<Hardware | null>(null);
+  const [hardwareForm, setHardwareForm] = useState<Partial<Hardware>>({
+    device_type: '',
+    make_model: '',
+    serial_number: '',
+    asset_tag: '',
+    location: '',
+    department: '',
+    assigned_to: '',
+    status: 'Aktif',
+    purchase_date: '',
+    warranty_expiry: '',
+    processor: '',
+    memory_gb: 0,
+    storage_gb: 0,
+    operating_system: '',
+    ip_address: '',
+    mac_address: '',
+    notes: ''
+  });
   
 
   
@@ -51,6 +75,7 @@ export default function Dashboard({ users }: DashboardProps) {
   useEffect(() => {
     fetchTasks();
     fetchNotes();
+    fetchHardware();
   }, []);
 
   // Bell dropdown dışına tıklandığında kapat
@@ -97,6 +122,18 @@ export default function Dashboard({ users }: DashboardProps) {
     }
   };
 
+  const fetchHardware = async () => {
+    try {
+      const response = await fetch('/api/hardware');
+      if (response.ok) {
+        const data = await response.json();
+        setHardware(data || []);
+      }
+    } catch (error) {
+      console.error('Donanım verileri alınamadı:', error);
+    }
+  };
+
   // Notification system
   const addNotification = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
     const id = Date.now();
@@ -128,6 +165,109 @@ export default function Dashboard({ users }: DashboardProps) {
   const clearAllNotifications = () => {
     setBellNotifications([]);
     setUnreadCount(0);
+  };
+
+  // Hardware form functions
+  const resetHardwareForm = () => {
+    setHardwareForm({
+      device_type: '',
+      make_model: '',
+      serial_number: '',
+      asset_tag: '',
+      location: '',
+      department: '',
+      assigned_to: '',
+      status: 'Aktif',
+      purchase_date: '',
+      warranty_expiry: '',
+      processor: '',
+      memory_gb: 0,
+      storage_gb: 0,
+      operating_system: '',
+      ip_address: '',
+      mac_address: '',
+      notes: ''
+    });
+    setEditingHardware(null);
+    setShowHardwareForm(false);
+  };
+
+  const handleHardwareSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      if (editingHardware) {
+        // Güncelleme
+        const response = await fetch(`/api/hardware/${editingHardware.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(hardwareForm),
+        });
+
+        if (response.ok) {
+          addNotification('Donanım başarıyla güncellendi!', 'success');
+          addBellNotification(`"${hardwareForm.device_type}" donanımı güncellendi`, 'update');
+          fetchHardware();
+          resetHardwareForm();
+        } else {
+          const errorData = await response.text();
+          addNotification('Donanım güncellenemedi: ' + errorData, 'error');
+        }
+      } else {
+        // Yeni donanım
+        const response = await fetch('/api/hardware', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(hardwareForm),
+        });
+
+        if (response.ok) {
+          addNotification('Donanım başarıyla eklendi!', 'success');
+          addBellNotification(`"${hardwareForm.device_type}" donanımı eklendi`, 'create');
+          fetchHardware();
+          resetHardwareForm();
+          setActiveTab('hardware'); // Donanım tab'ına geç
+        } else {
+          const errorData = await response.text();
+          addNotification('Donanım eklenemedi: ' + errorData, 'error');
+        }
+      }
+    } catch (error) {
+      console.error('Donanım kaydet hatası:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      addNotification('Bağlantı hatası: ' + errorMessage, 'error');
+    }
+  };
+
+  const handleEditHardware = (hardware: Hardware) => {
+    setEditingHardware(hardware);
+    setHardwareForm(hardware);
+    setShowHardwareForm(true);
+  };
+
+  const handleDeleteHardware = async (hardwareId: number) => {
+    if (window.confirm('Bu donanımı silmek istediğinizden emin misiniz?')) {
+      try {
+        const response = await fetch(`/api/hardware/${hardwareId}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          addNotification('Donanım başarıyla silindi!', 'success');
+          addBellNotification('Donanım silindi', 'delete');
+          fetchHardware();
+        } else {
+          addNotification('Donanım silinemedi!', 'error');
+        }
+      } catch (error) {
+        console.error('Donanım silme hatası:', error);
+        addNotification('Bağlantı hatası!', 'error');
+      }
+    }
   };
 
 
@@ -1092,7 +1232,7 @@ export default function Dashboard({ users }: DashboardProps) {
                 </button>
 
                 <button
-                  onClick={() => window.location.href = '/donanim'}
+                  onClick={() => setShowHardwareForm(true)}
                   className="btn btn-outline-primary me-2"
                   style={{
                     borderColor: '#1a202c',
@@ -1109,7 +1249,7 @@ export default function Dashboard({ users }: DashboardProps) {
                   }}
                 >
                   <Monitor className="me-2" size={18} />
-                  Donanım
+                  YENİ DONANIM EKLE
                 </button>
 
                 <button
@@ -1192,7 +1332,7 @@ export default function Dashboard({ users }: DashboardProps) {
                   <div className="col-md-4">
                     <div className="useful-link-card">
                       <h6 className="link-title">📷 PACS Görüntüleme</h6>
-                      <a href="http://10.43.0.6:33600" target="_blank" rel="noopener noreferrer" className="link-url">
+                      <a href="http://10.43.0.6:33600/viewer" target="_blank" rel="noopener noreferrer" className="link-url">
                         10.43.0.6:33600
                       </a>
                     </div>
@@ -1258,7 +1398,7 @@ export default function Dashboard({ users }: DashboardProps) {
                     <small className="text-muted">
                       {/* eslint-disable-next-line react/no-unescaped-entities */}
                       🔍 Aranıyor: &quot;<strong>{searchTerm}</strong>&quot; 
-                      {activeTab === 'tasks' ? ' (Görevlerde)' : activeTab === 'notes' ? ' (Notlarda)' : ''}
+                      {activeTab === 'tasks' ? ' (Görevlerde)' : activeTab === 'notes' ? ' (Notlarda)' : activeTab === 'hardware' ? ' (Donanımlarda)' : ''}
                     </small>
                   </div>
                 )}
@@ -1296,6 +1436,19 @@ export default function Dashboard({ users }: DashboardProps) {
                         }}
                       >
                         📝 Birim Notları
+                      </button>
+                    </li>
+                    <li className="nav-item">
+                      <button
+                        className={`nav-link ${activeTab === 'hardware' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('hardware')}
+                        style={{
+                          background: activeTab === 'hardware' ? 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)' : 'transparent',
+                          border: 'none',
+                          color: activeTab === 'hardware' ? 'white' : '#666'
+                        }}
+                      >
+                        🖥️ Donanım
                       </button>
                     </li>
                   </ul>
@@ -1426,6 +1579,121 @@ export default function Dashboard({ users }: DashboardProps) {
           {activeTab === 'notes' && (
             <Notes searchTerm={searchTerm} />
           )}
+
+          {/* Hardware Tab Content */}
+          {activeTab === 'hardware' && (
+            <div className="tasks-table-card">
+              <div className="table-header">
+                <div className="d-flex justify-content-between align-items-center">
+                  <h2 className="gradient-text fw-bold fs-3 mb-0">🖥️ Donanım Listesi</h2>
+                  <div className="d-flex gap-2">
+                    <div style={{width: '12px', height: '12px', backgroundColor: '#ff6b6b', borderRadius: '50%'}}></div>
+                    <div style={{width: '12px', height: '12px', backgroundColor: '#feca57', borderRadius: '50%'}}></div>
+                    <div style={{width: '12px', height: '12px', backgroundColor: '#48cab2', borderRadius: '50%'}}></div>
+                  </div>
+                </div>
+              </div>
+              
+              {hardware.length === 0 ? (
+                <div className="text-center py-5">
+                  <div className="mx-auto mb-4" style={{
+                    width: '100px', 
+                    height: '100px', 
+                    background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <Monitor size={40} className="text-muted" />
+                  </div>
+                  <h4 className="fw-bold text-dark mb-3">Henüz donanım yok</h4>
+                  <p className="text-muted mb-4">İlk donanımınızı ekleyin ve envanteri yönetmeye başlayın!</p>
+                  <button
+                    onClick={() => setShowHardwareForm(true)}
+                    className="btn gradient-btn text-white px-4 py-3"
+                  >
+                    <Monitor className="me-2" size={18} />
+                    İlk Donanımımı Ekle 🚀
+                  </button>
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table table-hover mb-0">
+                    <thead>
+                      <tr style={{backgroundColor: 'rgba(102, 126, 234, 0.05)'}}>
+                        <th className="border-0 fw-bold text-uppercase small ps-4 py-3">🖥️ Cihaz</th>
+                        <th className="border-0 fw-bold text-uppercase small py-3">📍 Konum</th>
+                        <th className="border-0 fw-bold text-uppercase small py-3">👤 Kullanıcı</th>
+                        <th className="border-0 fw-bold text-uppercase small py-3">📊 Durum</th>
+                        <th className="border-0 fw-bold text-uppercase small pe-4 py-3">🔧 İşlemler</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {hardware
+                        .filter(item => {
+                          if (!searchTerm) return true;
+                          return item.device_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                 item.make_model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                 item.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                 item.assigned_to.toLowerCase().includes(searchTerm.toLowerCase());
+                        })
+                        .map((item) => (
+                        <tr key={item.id} style={{borderBottom: '1px solid rgba(0,0,0,0.05)'}}>
+                          <td className="border-0 ps-4 py-4">
+                            <div>
+                              <h6 className="fw-bold mb-1 text-dark">{item.device_type}</h6>
+                              <p className="text-muted small mb-0 bg-light rounded-pill px-3 py-1 d-inline-block">
+                                {item.make_model}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="border-0 py-4">
+                            <div>
+                              <span className="fw-semibold text-dark">{item.location}</span>
+                              {item.department && (
+                                <p className="text-muted small mb-0">{item.department}</p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="border-0 py-4">
+                            <span className="fw-semibold text-dark">{item.assigned_to}</span>
+                          </td>
+                          <td className="border-0 py-4">
+                            <span className={`status-badge ${
+                              item.status === 'Aktif' ? 'bg-success' : 
+                              item.status === 'Bakımda' ? 'bg-warning' : 
+                              item.status === 'Arızalı' ? 'bg-danger' : 'bg-secondary'
+                            } text-white`}>
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="border-0 py-4 pe-4">
+                            <div className="d-flex gap-2">
+                              <button
+                                onClick={() => handleEditHardware(item)}
+                                className="action-btn edit-btn"
+                                title="Donanımı Düzenle"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteHardware(item.id)}
+                                className="action-btn delete-btn"
+                                title="Donanımı Sil"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </main>
 
         {/* Görev Formu Modal */}
@@ -1529,6 +1797,248 @@ export default function Dashboard({ users }: DashboardProps) {
                       style={{fontWeight: '600'}}
                     >
                       {editingTask ? '✏️ Güncelle' : '💾 Kaydet'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Donanım Formu Modal */}
+        {showHardwareForm && (
+          <div className="modal-backdrop position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{zIndex: 1050}}>
+            <div className="modal-content p-0" style={{maxWidth: '900px', width: '95%', maxHeight: '90vh', overflowY: 'auto'}}>
+              <div className="p-4">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h3 className="gradient-text fw-bold fs-4 mb-0">
+                    {editingHardware ? '✏️ Donanım Düzenle' : '🖥️ Yeni Donanım Ekle'}
+                  </h3>
+                  <button
+                    onClick={resetHardwareForm}
+                    type="button"
+                    className="btn-close"
+                    style={{background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer'}}
+                  >
+                    ✕
+                  </button>
+                </div>
+                
+                <form onSubmit={handleHardwareSubmit}>
+                  <div className="row">
+                    {/* Sol Kolon */}
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Cihaz Türü *</label>
+                        <input
+                          type="text"
+                          required
+                          value={hardwareForm.device_type || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, device_type: e.target.value })}
+                          className="form-control"
+                          placeholder="Bilgisayar, Yazıcı, Router vb."
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Marka/Model *</label>
+                        <input
+                          type="text"
+                          required
+                          value={hardwareForm.make_model || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, make_model: e.target.value })}
+                          className="form-control"
+                          placeholder="HP EliteBook 840, Canon LBP6230 vb."
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Seri Numarası</label>
+                        <input
+                          type="text"
+                          value={hardwareForm.serial_number || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, serial_number: e.target.value })}
+                          className="form-control"
+                          placeholder="Cihazın seri numarası"
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Asset Tag</label>
+                        <input
+                          type="text"
+                          value={hardwareForm.asset_tag || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, asset_tag: e.target.value })}
+                          className="form-control"
+                          placeholder="Hastane envanter numarası"
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Konum</label>
+                        <input
+                          type="text"
+                          value={hardwareForm.location || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, location: e.target.value })}
+                          className="form-control"
+                          placeholder="Oda numarası, bina vb."
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Departman</label>
+                        <input
+                          type="text"
+                          value={hardwareForm.department || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, department: e.target.value })}
+                          className="form-control"
+                          placeholder="Bilgi İşlem, Muhasebe vb."
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Kullanıcı</label>
+                        <input
+                          type="text"
+                          value={hardwareForm.assigned_to || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, assigned_to: e.target.value })}
+                          className="form-control"
+                          placeholder="Cihazı kullanan kişi"
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Durum</label>
+                        <select
+                          value={hardwareForm.status || 'Aktif'}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, status: e.target.value })}
+                          className="form-select"
+                        >
+                          <option value="Aktif">Aktif</option>
+                          <option value="Bakımda">Bakımda</option>
+                          <option value="Arızalı">Arızalı</option>
+                          <option value="Depo">Depo</option>
+                          <option value="Emekli">Emekli</option>
+                        </select>
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Satın Alma Tarihi</label>
+                        <input
+                          type="date"
+                          value={hardwareForm.purchase_date || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, purchase_date: e.target.value })}
+                          className="form-control"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Sağ Kolon */}
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Garanti Bitiş Tarihi</label>
+                        <input
+                          type="date"
+                          value={hardwareForm.warranty_expiry || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, warranty_expiry: e.target.value })}
+                          className="form-control"
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">İşlemci</label>
+                        <input
+                          type="text"
+                          value={hardwareForm.processor || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, processor: e.target.value })}
+                          className="form-control"
+                          placeholder="Intel i5-8250U, AMD Ryzen 5 vb."
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">RAM (GB)</label>
+                        <input
+                          type="number"
+                          value={hardwareForm.memory_gb || 0}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, memory_gb: parseInt(e.target.value) || 0 })}
+                          className="form-control"
+                          placeholder="8, 16, 32 vb."
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Depolama (GB)</label>
+                        <input
+                          type="number"
+                          value={hardwareForm.storage_gb || 0}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, storage_gb: parseInt(e.target.value) || 0 })}
+                          className="form-control"
+                          placeholder="256, 512, 1000 vb."
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">İşletim Sistemi</label>
+                        <input
+                          type="text"
+                          value={hardwareForm.operating_system || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, operating_system: e.target.value })}
+                          className="form-control"
+                          placeholder="Windows 11, Ubuntu 20.04 vb."
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">IP Adresi</label>
+                        <input
+                          type="text"
+                          value={hardwareForm.ip_address || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, ip_address: e.target.value })}
+                          className="form-control"
+                          placeholder="192.168.1.100"
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">MAC Adresi</label>
+                        <input
+                          type="text"
+                          value={hardwareForm.mac_address || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, mac_address: e.target.value })}
+                          className="form-control"
+                          placeholder="00:11:22:33:44:55"
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Notlar</label>
+                        <textarea
+                          value={hardwareForm.notes || ''}
+                          onChange={(e) => setHardwareForm({ ...hardwareForm, notes: e.target.value })}
+                          rows={4}
+                          className="form-control"
+                          placeholder="Ek bilgiler, özel notlar..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="d-flex justify-content-end gap-3 pt-3 border-top">
+                    <button
+                      type="button"
+                      onClick={resetHardwareForm}
+                      className="btn btn-light px-4 py-2"
+                      style={{borderRadius: '15px', fontWeight: '600'}}
+                    >
+                      ❌ İptal
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn gradient-btn text-white px-4 py-2"
+                      style={{fontWeight: '600'}}
+                    >
+                      {editingHardware ? '✏️ Güncelle' : '💾 Donanımı Kaydet'}
                     </button>
                   </div>
                 </form>
