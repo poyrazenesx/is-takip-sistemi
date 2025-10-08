@@ -1123,7 +1123,7 @@ export default function Dashboard({ users }: DashboardProps) {
                 <p className="text-muted small mb-0">Hastane Bilgi İşlem Sistemi</p>
               </div>
               <div className="col-lg-2 col-md-2 col-sm-6 d-flex justify-content-center">
-                {/* Hızlı Araçlar - Yan Yana Butonlar */}
+                {/* Hızlı Araçlar - Sadece 2 Araç */}
                 <div className="d-flex gap-2 align-items-center">
                   <button
                     onClick={() => {
