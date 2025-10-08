@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User, Hardware } from '@/types';
-import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor, Eye } from 'lucide-react';
+import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor, Eye, Settings, ChevronDown, Wrench, Calculator, Calendar, Database } from 'lucide-react';
 import Notes from '@/components/Notes';
 
 
@@ -48,6 +48,9 @@ export default function Dashboard({ users }: DashboardProps) {
   const [showBellDropdown, setShowBellDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   
+  // Tools Dropdown System
+  const [showToolsDropdown, setShowToolsDropdown] = useState(false);
+  
 
 
   // Form verileri
@@ -87,6 +90,24 @@ export default function Dashboard({ users }: DashboardProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showBellDropdown]);
+
+  // Tools dropdown dışına tıklandığında kapat
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const toolsContainer = document.querySelector('.dropdown');
+      if (toolsContainer && !toolsContainer.contains(event.target as Node)) {
+        setShowToolsDropdown(false);
+      }
+    };
+
+    if (showToolsDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showToolsDropdown]);
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -1118,8 +1139,156 @@ export default function Dashboard({ users }: DashboardProps) {
                 </h5>
                 <p className="text-muted small mb-0">Hastane Bilgi İşlem Sistemi</p>
               </div>
-              <div className="col-lg-3 col-md-2 col-sm-6">
-                {/* Takvim alanı kaldırıldı */}
+              <div className="col-lg-3 col-md-2 col-sm-6 d-flex justify-content-center">
+                {/* Araçlar Dropdown */}
+                <div className="dropdown" style={{ position: 'relative' }}>
+                  <button
+                    className="btn btn-outline-secondary dropdown-toggle d-flex align-items-center"
+                    onClick={() => setShowToolsDropdown(!showToolsDropdown)}
+                    style={{
+                      borderColor: '#48cab2',
+                      color: '#48cab2',
+                      fontWeight: '600',
+                      fontFamily: 'Alumni Sans, sans-serif',
+                      fontSize: '0.9rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = '#48cab2';
+                      e.currentTarget.style.color = 'white';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = '#48cab2';
+                    }}
+                  >
+                    <Wrench className="me-2" size={16} />
+                    Araçlar
+                    <ChevronDown className="ms-1" size={14} />
+                  </button>
+                  
+                  {showToolsDropdown && (
+                    <div 
+                      className="dropdown-menu show"
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '0',
+                        zIndex: 1000,
+                        minWidth: '200px',
+                        backgroundColor: 'white',
+                        border: '1px solid rgba(0,0,0,0.1)',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        padding: '8px 0',
+                        marginTop: '5px'
+                      }}
+                    >
+                      <h6 className="dropdown-header" style={{ 
+                        fontFamily: 'Alumni Sans, sans-serif', 
+                        fontWeight: '700',
+                        textTransform: 'uppercase',
+                        fontSize: '0.75rem',
+                        letterSpacing: '1px',
+                        color: '#4a5568'
+                      }}>
+                        🛠️ Geliştirme Araçları
+                      </h6>
+                      
+                      <button 
+                        className="dropdown-item d-flex align-items-center"
+                        onClick={() => {
+                          setShowToolsDropdown(false);
+                          // TODO: Hesap makinesi uygulamasına yönlendir
+                          alert('Hesap Makinesi - Yakında!');
+                        }}
+                        style={{
+                          padding: '8px 16px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          width: '100%',
+                          textAlign: 'left',
+                          fontFamily: 'Alumni Sans, sans-serif',
+                          fontSize: '0.85rem'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <Calculator className="me-2" size={16} color="#48cab2" />
+                        Hesap Makinesi
+                      </button>
+
+                      <button 
+                        className="dropdown-item d-flex align-items-center"
+                        onClick={() => {
+                          setShowToolsDropdown(false);
+                          alert('Takvim Uygulaması - Yakında!');
+                        }}
+                        style={{
+                          padding: '8px 16px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          width: '100%',
+                          textAlign: 'left',
+                          fontFamily: 'Alumni Sans, sans-serif',
+                          fontSize: '0.85rem'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <Calendar className="me-2" size={16} color="#48cab2" />
+                        Takvim Uygulaması
+                      </button>
+
+                      <button 
+                        className="dropdown-item d-flex align-items-center"
+                        onClick={() => {
+                          setShowToolsDropdown(false);
+                          alert('Veritabanı Yöneticisi - Yakında!');
+                        }}
+                        style={{
+                          padding: '8px 16px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          width: '100%',
+                          textAlign: 'left',
+                          fontFamily: 'Alumni Sans, sans-serif',
+                          fontSize: '0.85rem'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <Database className="me-2" size={16} color="#48cab2" />
+                        DB Yöneticisi
+                      </button>
+
+                      <div className="dropdown-divider" style={{ margin: '8px 0', borderTop: '1px solid #e9ecef' }}></div>
+                      
+                      <button 
+                        className="dropdown-item d-flex align-items-center"
+                        onClick={() => {
+                          setShowToolsDropdown(false);
+                          alert('Sistem Ayarları - Yakında!');
+                        }}
+                        style={{
+                          padding: '8px 16px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          width: '100%',
+                          textAlign: 'left',
+                          fontFamily: 'Alumni Sans, sans-serif',
+                          fontSize: '0.85rem'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <Settings className="me-2" size={16} color="#6c757d" />
+                        Sistem Ayarları
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="col-lg-3 col-md-3 col-sm-6 text-end">
 
