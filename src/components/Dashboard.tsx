@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User, Hardware } from '@/types';
 import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor, Eye } from 'lucide-react';
@@ -21,7 +21,6 @@ export default function Dashboard({ users }: DashboardProps) {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [activeTab, setActiveTab] = useState<'tasks' | 'notes' | 'hardware'>('tasks');
   const [searchTerm, setSearchTerm] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
   
   // Hardware modal states
   const [showHardwareForm, setShowHardwareForm] = useState(false);
@@ -61,10 +60,15 @@ export default function Dashboard({ users }: DashboardProps) {
   });
 
   useEffect(() => {
-    fetchTasks();
-    fetchNotes();
-    fetchHardware();
-  }, []);
+    // Sadece aktif tab için veri çek
+    if (activeTab === 'tasks') {
+      fetchTasks();
+    } else if (activeTab === 'notes') {
+      fetchNotes();
+    } else if (activeTab === 'hardware') {
+      fetchHardware();
+    }
+  }, [activeTab]);
 
   // Bell dropdown dışına tıklandığında kapat
   useEffect(() => {
@@ -84,7 +88,7 @@ export default function Dashboard({ users }: DashboardProps) {
     };
   }, [showBellDropdown]);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       const response = await fetch('/api/tasks');
       if (response.ok) {
@@ -96,9 +100,9 @@ export default function Dashboard({ users }: DashboardProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     try {
       const response = await fetch('/api/notes');
       if (response.ok) {
@@ -108,9 +112,9 @@ export default function Dashboard({ users }: DashboardProps) {
     } catch (error) {
       console.error('Notlar alınamadı:', error);
     }
-  };
+  }, []);
 
-  const fetchHardware = async () => {
+  const fetchHardware = useCallback(async () => {
     try {
       const response = await fetch('/api/hardware');
       if (response.ok) {
@@ -121,7 +125,7 @@ export default function Dashboard({ users }: DashboardProps) {
       console.error('Donanım verileri alınamadı:', error);
       setHardware([]); // Hata durumunda boş array
     }
-  };
+  }, []);
 
   // Notification system
   const addNotification = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
@@ -169,6 +173,16 @@ export default function Dashboard({ users }: DashboardProps) {
     setEditingHardware(null);
     setShowHardwareForm(false);
   };
+
+  // Performance optimized filtered data
+  const filteredTasks = useMemo(() => {
+    if (!searchTerm) return tasks;
+    const search = searchTerm.toLowerCase();
+    return tasks.filter(task => 
+      task.title.toLowerCase().includes(search) ||
+      task.description.toLowerCase().includes(search)
+    );
+  }, [tasks, searchTerm]);
 
   const handleHardwareSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -273,7 +287,6 @@ export default function Dashboard({ users }: DashboardProps) {
     try {
       if (editingTask) {
         // Güncelleme
-        console.log('Görev güncelleniyor:', editingTask.id, taskForm);
         const response = await fetch('/api/tasks', {
           method: 'PUT',
           headers: {
@@ -285,21 +298,14 @@ export default function Dashboard({ users }: DashboardProps) {
           }),
         });
 
-        console.log('Güncelleme response:', response.status);
         if (response.ok) {
-          console.log('Güncelleme başarılı');
           fetchTasks();
           resetForm();
         } else {
-          const errorData = await response.text();
-          console.error('Güncelleme hatası:', errorData);
-          addNotification('Görev güncellenemedi: ' + errorData, 'error');
+          addNotification('Görev güncellenemedi', 'error');
         }
       } else {
         // Yeni görev
-        console.log('Yeni görev oluşturuluyor:', taskForm);
-        console.log('Current user:', user);
-        console.log('User ID:', user?.id, typeof user?.id);
         const response = await fetch('/api/tasks', {
           method: 'POST',
           headers: {
@@ -311,21 +317,16 @@ export default function Dashboard({ users }: DashboardProps) {
           }),
         });
 
-        console.log('POST response status:', response.status);
         if (response.ok) {
-          console.log('Yeni görev başarıyla oluşturuldu');
           await fetchTasks();
           resetForm();
           addNotification('Görev başarıyla oluşturuldu!', 'success');
           addBellNotification(`"${taskForm.title}" görevi oluşturuldu`, 'create');
         } else {
-          const errorData = await response.text();
-          console.error('POST hatası:', errorData);
-          addNotification('Görev oluşturulamadı: ' + errorData, 'error');
+          addNotification('Görev oluşturulamadı', 'error');
         }
       }
     } catch (error) {
-      console.error('Görev kaydet hatası:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       addNotification('Bağlantı hatası: ' + errorMessage, 'error');
     }
@@ -420,20 +421,7 @@ export default function Dashboard({ users }: DashboardProps) {
     }
   };
 
-  const highlightText = (text: string, searchTerm: string) => {
-    if (!searchTerm) return text;
-    
-    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    const parts = text.split(regex);
-    
-    return parts.map((part, index) =>
-      regex.test(part) ? (
-        <mark key={index} style={{ background: '#fff3cd', padding: '2px 4px', borderRadius: '3px', fontWeight: 'bold' }}>
-          {part}
-        </mark>
-      ) : part
-    );
-  };
+
 
   if (isLoading) {
     return (
@@ -451,7 +439,7 @@ export default function Dashboard({ users }: DashboardProps) {
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-          <div className="spinner-border text-white" role="status" style={{width: '4rem', height: '4rem'}}>
+          <div className="spinner-border text-white spinner-large" role="status">
             <span className="visually-hidden">Yükleniyor...</span>
           </div>
         </div>
@@ -753,10 +741,6 @@ export default function Dashboard({ users }: DashboardProps) {
           font-size: 11px;
           color: #718096;
           margin: 0;
-        }
-        
-        .dashboard-container.dark-theme {
-          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         }
         
         .glass-card {
@@ -1113,7 +1097,7 @@ export default function Dashboard({ users }: DashboardProps) {
         ))}
       </div>
       
-      <div className={`dashboard-container ${darkMode ? 'dark-theme' : ''}`}>
+      <div className="dashboard-container">
         {/* Notifications */}
         <div className="notifications-container">
           {notifications.map((notification) => (
@@ -1130,19 +1114,12 @@ export default function Dashboard({ users }: DashboardProps) {
               <div className="col-md-6">
                 <h1 className="gradient-text fw-bold fs-2 mb-2">İş Takip Sistemi</h1>
                 <h5 className="text-muted mb-0">
-                  Hoş geldin, <span className="fw-bold" style={{color: '#1a202c'}}>{user?.name}</span> 👋
+                  Hoş geldin, <span className="fw-bold text-welcome">{user?.name}</span> 👋
                 </h5>
                 <p className="text-muted small mb-0">Hastane Bilgi İşlem Sistemi</p>
               </div>
               <div className="col-md-6 text-end">
 
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="btn btn-outline-secondary me-2"
-                  title={darkMode ? 'Açık tema' : 'Koyu tema'}
-                >
-                  {darkMode ? '☀️' : '🌙'}
-                </button>
                 <button
                   onClick={() => setShowTaskForm(true)}
                   className="btn gradient-btn text-white me-2"
@@ -1192,14 +1169,14 @@ export default function Dashboard({ users }: DashboardProps) {
               <div className="glass-card rounded-4 p-3">
                 <div className="d-flex align-items-center justify-content-center gap-4">
                   <div className="d-flex align-items-center gap-2">
-                    <div className="stat-icon-small" style={{background: 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)'}}>
+                    <div className="stat-icon-small stat-icon-dark">
                       <FileText className="text-white" size={16} />
                     </div>
                     <span className="fw-bold text-dark">{notes.length} Not</span>
                   </div>
                   <div className="text-muted">•</div>
                   <div className="d-flex align-items-center gap-2">
-                    <div className="stat-icon-small" style={{background: 'linear-gradient(135deg, #48cab2 0%, #54a0ff 100%)'}}>
+                    <div className="stat-icon-small stat-icon-blue">
                       <UserIcon className="text-white" size={16} />
                     </div>
                     <span className="fw-bold text-dark">{users.length} Kullanıcı</span>
@@ -1385,9 +1362,9 @@ export default function Dashboard({ users }: DashboardProps) {
                 <div className="d-flex justify-content-between align-items-center">
                   <h2 className="gradient-text fw-bold fs-3 mb-0">📋 Görevler</h2>
                 <div className="d-flex gap-2">
-                  <div style={{width: '12px', height: '12px', backgroundColor: '#ff6b6b', borderRadius: '50%'}}></div>
-                  <div style={{width: '12px', height: '12px', backgroundColor: '#feca57', borderRadius: '50%'}}></div>
-                  <div style={{width: '12px', height: '12px', backgroundColor: '#48cab2', borderRadius: '50%'}}></div>
+                  <div className="status-dot status-high"></div>
+                  <div className="status-dot status-medium"></div>
+                  <div className="status-dot status-low"></div>
                 </div>
               </div>
             </div>
@@ -1419,7 +1396,7 @@ export default function Dashboard({ users }: DashboardProps) {
               <div className="table-responsive">
                 <table className="table table-hover mb-0">
                   <thead>
-                    <tr style={{backgroundColor: 'rgba(102, 126, 234, 0.05)'}}>
+                    <tr className="table-header-bg">
                       <th className="border-0 fw-bold text-uppercase small ps-4 py-3">📋 Görev</th>
                       <th className="border-0 fw-bold text-uppercase small py-3">👤 Atanan</th>
                       <th className="border-0 fw-bold text-uppercase small py-3">📊 Durum</th>
@@ -1428,19 +1405,14 @@ export default function Dashboard({ users }: DashboardProps) {
                     </tr>
                   </thead>
                   <tbody>
-                    {tasks
-                      .filter(task => {
-                        if (!searchTerm) return true;
-                        return task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                               task.description.toLowerCase().includes(searchTerm.toLowerCase());
-                      })
+                    {filteredTasks
                       .map((task, index) => (
                       <tr key={task.id} style={{borderBottom: '1px solid rgba(0,0,0,0.05)'}}>
                         <td className="border-0 ps-4 py-4">
                           <div>
-                            <h6 className="fw-bold mb-1 text-dark">{highlightText(task.title, searchTerm)}</h6>
+                            <h6 className="fw-bold mb-1 text-dark">{task.title}</h6>
                             <p className="text-muted small mb-0 bg-light rounded-pill px-3 py-1 d-inline-block">
-                              {highlightText(task.description, searchTerm)}
+                              {task.description}
                             </p>
                           </div>
                         </td>
