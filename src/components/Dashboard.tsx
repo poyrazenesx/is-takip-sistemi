@@ -15,7 +15,7 @@ export default function Dashboard({ users }: DashboardProps) {
   const { user, logout } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [notes, setNotes] = useState<any[]>([]);
-  const [hardware, setHardware] = useState<Hardware[]>([]);
+  const [hardware, setHardware] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -222,9 +222,17 @@ export default function Dashboard({ users }: DashboardProps) {
     }
   };
 
-  const handleEditHardware = (hardware: Hardware) => {
+  const handleEditHardware = (hardware: any) => {
     setEditingHardware(hardware);
-    setHardwareForm(hardware);
+    // Veritabanı alanlarından form alanlarına mapping
+    setHardwareForm({
+      device_type: hardware.device_type,
+      make_model: hardware.work_done, // Yapılan işlem
+      status: hardware.status,
+      purchase_date: hardware.date,
+      ip_address: hardware.tag_number, // IP adresini tag'dan al
+      notes: hardware.notes
+    });
     setShowHardwareForm(true);
   };
 
@@ -1614,23 +1622,23 @@ export default function Dashboard({ users }: DashboardProps) {
                           if (!searchTerm) return true;
                           const search = searchTerm.toLowerCase();
                           return (item?.device_type || '').toLowerCase().includes(search) ||
-                                 (item?.make_model || '').toLowerCase().includes(search) ||
-                                 (item?.location || '').toLowerCase().includes(search) ||
-                                 (item?.assigned_to || '').toLowerCase().includes(search);
+                                 (item?.work_done || '').toLowerCase().includes(search) ||
+                                 (item?.tag_number || '').toLowerCase().includes(search) ||
+                                 (item?.notes || '').toLowerCase().includes(search);
                         })
                         .map((item) => (
                         <tr key={item?.id || Math.random()} style={{borderBottom: '1px solid rgba(0,0,0,0.05)'}}>
                           <td className="border-0 ps-4 py-4">
                             <div className="d-flex align-items-center">
                               <span className="fw-bold text-dark">{item?.device_type || 'N/A'}</span>
-                              {item?.ip_address && (
-                                <span className="badge bg-light text-dark ms-2 small">{item.ip_address}</span>
+                              {item?.tag_number && (
+                                <span className="badge bg-light text-dark ms-2 small">{item.tag_number}</span>
                               )}
                             </div>
                           </td>
                           <td className="border-0 py-4">
                             <div style={{maxWidth: '300px'}}>
-                              <p className="mb-0 text-dark">{item?.make_model || 'N/A'}</p>
+                              <p className="mb-0 text-dark">{item?.work_done || 'N/A'}</p>
                               {item?.notes && (
                                 <small className="text-muted d-block mt-1">{item.notes.substring(0, 50)}...</small>
                               )}
@@ -1638,7 +1646,7 @@ export default function Dashboard({ users }: DashboardProps) {
                           </td>
                           <td className="border-0 py-4">
                             <span className="fw-semibold text-dark">
-                              {item?.purchase_date ? new Date(item.purchase_date).toLocaleDateString('tr-TR') : 'N/A'}
+                              {item?.date ? new Date(item.date).toLocaleDateString('tr-TR') : 'N/A'}
                             </span>
                           </td>
                           <td className="border-0 py-4">
