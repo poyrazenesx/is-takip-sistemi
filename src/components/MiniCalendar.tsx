@@ -115,26 +115,30 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ className = '' }) => {
     <div className={`mini-calendar ${className}`}>
       <style jsx>{`
         .mini-calendar {
-          background: rgba(255, 255, 255, 0.98);
-          border-radius: 8px;
-          padding: 8px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          width: 240px;
+          background: rgba(255, 255, 255, 0.95);
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          border-radius: 6px;
+          padding: 6px;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+          width: 160px;
           font-family: 'Alumni Sans', sans-serif;
+          font-size: 11px;
         }
 
         .mini-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 6px;
+          margin-bottom: 4px;
+          padding: 2px 0;
         }
 
         .mini-title {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: #1a202c;
+          font-size: 0.65rem;
+          font-weight: 600;
+          color: #2d3748;
           margin: 0;
+          line-height: 1;
         }
 
         .mini-nav {
@@ -145,60 +149,64 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ className = '' }) => {
         .mini-nav-btn {
           background: none;
           border: none;
-          width: 20px;
-          height: 20px;
+          width: 14px;
+          height: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          border-radius: 4px;
+          border-radius: 2px;
           color: #4a5568;
-          transition: all 0.2s ease;
+          transition: background 0.15s ease;
         }
 
         .mini-nav-btn:hover {
-          background: rgba(74, 85, 104, 0.15);
-          color: #1a202c;
+          background: rgba(74, 85, 104, 0.1);
         }
 
         .mini-today-btn {
-          background: #1e3a5f;
+          background: #48cab2;
           color: white;
           border: none;
-          border-radius: 3px;
-          padding: 1px 4px;
-          font-size: 0.6rem;
+          border-radius: 2px;
+          padding: 1px 3px;
+          font-size: 0.5rem;
           cursor: pointer;
           font-weight: 600;
+          line-height: 1;
         }
 
         .mini-grid {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
-          gap: 1px;
+          gap: 0.5px;
         }
 
         .mini-weekday {
           text-align: center;
-          padding: 2px;
-          font-size: 0.6rem;
-          font-weight: 600;
-          color: #718096;
+          padding: 1px;
+          font-size: 0.5rem;
+          font-weight: 500;
+          color: #a0aec0;
+          height: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .mini-day {
-          width: 28px;
-          height: 22px;
+          width: 18px;
+          height: 16px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          font-size: 0.7rem;
+          font-size: 0.55rem;
           font-weight: 500;
           cursor: pointer;
-          border-radius: 3px;
+          border-radius: 2px;
           position: relative;
-          transition: all 0.2s ease;
+          transition: background 0.15s ease;
         }
 
         .mini-day:hover {
@@ -223,39 +231,39 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ className = '' }) => {
         }
 
         .mini-day-number {
-          font-size: 0.6rem;
+          font-size: 0.55rem;
           line-height: 1;
         }
 
         .mini-holiday-icon {
           position: absolute;
-          top: -2px;
-          right: -2px;
-          font-size: 0.5rem;
+          top: -1px;
+          right: -1px;
+          font-size: 0.4rem;
           line-height: 1;
         }
 
         @media (max-width: 768px) {
           .mini-calendar {
-            width: 200px;
-            padding: 6px;
+            width: 140px;
+            padding: 4px;
           }
           
           .mini-day {
-            width: 24px;
-            height: 18px;
+            width: 16px;
+            height: 14px;
           }
           
           .mini-day-number {
-            font-size: 0.6rem;
+            font-size: 0.5rem;
           }
           
           .mini-holiday-icon {
-            font-size: 0.45rem;
+            font-size: 0.35rem;
           }
           
           .mini-title {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
           }
         }
       `}</style>
@@ -271,7 +279,7 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ className = '' }) => {
             onClick={() => navigateMonth('prev')}
             title="Önceki Ay"
           >
-            <ChevronLeft size={14} />
+            <ChevronLeft size={10} />
           </button>
           <button 
             className="mini-today-btn"
@@ -285,7 +293,7 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ className = '' }) => {
             onClick={() => navigateMonth('next')}
             title="Sonraki Ay"
           >
-            <ChevronRight size={14} />
+            <ChevronRight size={10} />
           </button>
         </div>
       </div>
