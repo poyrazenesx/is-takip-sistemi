@@ -17,7 +17,7 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ className = '' }) => {
     '2025-05-01': '⚒️', // İşçi Bayramı
     '2025-05-19': '🇹🇷', // 19 Mayıs Atatürk'ü Anma, Gençlik ve Spor Bayramı
     '2025-08-30': '🇹🇷', // 30 Ağustos Zafer Bayramı
-    '2025-10-29': '🇹🇷', // 29 Ekim Cumhuriyet Bayramı
+    '2025-10-29': '🇹🇷', // 29 Ekim Cumhuriyet Bayramı - DÜZELTİLDİ!
     // Ramazan Bayramı 2025 (30 Mart - 1 Nisan)
     '2025-03-30': '🌙', // Ramazan Bayramı 1. gün
     '2025-03-31': '🌙', // Ramazan Bayramı 2. gün
@@ -119,7 +119,7 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ className = '' }) => {
           border-radius: 8px;
           padding: 8px;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          width: 180px;
+          width: 240px;
           font-family: 'Alumni Sans', sans-serif;
         }
 
@@ -145,18 +145,20 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ className = '' }) => {
         .mini-nav-btn {
           background: none;
           border: none;
-          width: 16px;
-          height: 16px;
+          width: 20px;
+          height: 20px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          border-radius: 2px;
+          border-radius: 4px;
           color: #4a5568;
+          transition: all 0.2s ease;
         }
 
         .mini-nav-btn:hover {
-          background: rgba(74, 85, 104, 0.1);
+          background: rgba(74, 85, 104, 0.15);
+          color: #1a202c;
         }
 
         .mini-today-btn {
@@ -185,17 +187,18 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ className = '' }) => {
         }
 
         .mini-day {
-          width: 20px;
-          height: 18px;
+          width: 28px;
+          height: 22px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          font-size: 0.65rem;
+          font-size: 0.7rem;
           font-weight: 500;
           cursor: pointer;
-          border-radius: 2px;
+          border-radius: 3px;
           position: relative;
+          transition: all 0.2s ease;
         }
 
         .mini-day:hover {
@@ -234,25 +237,25 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ className = '' }) => {
 
         @media (max-width: 768px) {
           .mini-calendar {
-            width: 150px;
+            width: 200px;
             padding: 6px;
           }
           
           .mini-day {
-            width: 16px;
-            height: 14px;
+            width: 24px;
+            height: 18px;
           }
           
           .mini-day-number {
-            font-size: 0.5rem;
+            font-size: 0.6rem;
           }
           
           .mini-holiday-icon {
-            font-size: 0.4rem;
+            font-size: 0.45rem;
           }
           
           .mini-title {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
           }
         }
       `}</style>
@@ -268,7 +271,7 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ className = '' }) => {
             onClick={() => navigateMonth('prev')}
             title="Önceki Ay"
           >
-            <ChevronLeft size={10} />
+            <ChevronLeft size={14} />
           </button>
           <button 
             className="mini-today-btn"
@@ -282,7 +285,7 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ className = '' }) => {
             onClick={() => navigateMonth('next')}
             title="Sonraki Ay"
           >
-            <ChevronRight size={10} />
+            <ChevronRight size={14} />
           </button>
         </div>
       </div>
