@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User, Hardware } from '@/types';
-import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor, Eye, List, Columns, Calendar, BarChart3 } from 'lucide-react';
+import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor, Eye, List, Columns, Calendar, BarChart3, Settings, TrendingUp, Users } from 'lucide-react';
 import Notes from '@/components/Notes';
 
 
@@ -22,6 +22,33 @@ export default function Dashboard({ users }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<'tasks' | 'notes' | 'hardware'>('tasks');
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'calendar' | 'timeline'>('list');
+  
+  // Dashboard Customization
+  const [showCustomizeModal, setShowCustomizeModal] = useState(false);
+  const [enabledWidgets, setEnabledWidgets] = useState({
+    statsOverview: true,
+    quickStats: true,
+    recentActivity: true,
+    taskSummary: true,
+    teamPerformance: false,
+    chartView: false
+  });
+
+  // Theme Options State
+  const [currentTheme, setCurrentTheme] = useState('default');
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
+
+  // Keyboard Shortcuts State
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+
+  // Quick Filters State
+  const [quickFilters, setQuickFilters] = useState({
+    showOverdue: false,
+    showToday: false,
+    showThisWeek: false,
+    showHighPriority: false,
+    showMyTasks: false
+  });
   
   // Hardware modal states
   const [showHardwareForm, setShowHardwareForm] = useState(false);
@@ -88,6 +115,85 @@ export default function Dashboard({ users }: DashboardProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showBellDropdown]);
+
+  // Load widget preferences and theme from localStorage
+  useEffect(() => {
+    const savedWidgets = localStorage.getItem('dashboardWidgets');
+    if (savedWidgets) {
+      try {
+        const parsedWidgets = JSON.parse(savedWidgets);
+        setEnabledWidgets(parsedWidgets);
+      } catch (error) {
+        console.error('Error loading widget preferences:', error);
+      }
+    }
+
+    const savedTheme = localStorage.getItem('appTheme');
+    if (savedTheme) {
+      setCurrentTheme(savedTheme);
+      document.body.className = document.body.className.replace(/theme-\w+/g, '');
+      document.body.classList.add(`theme-${savedTheme}`);
+    }
+  }, []);
+
+  // Keyboard shortcuts handler
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      // Prevent shortcuts when typing in inputs or textareas
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (event.ctrlKey || event.metaKey) {
+        switch(event.key) {
+          case 'n':
+            event.preventDefault();
+            setShowTaskForm(true);
+            break;
+          case 'k':
+            event.preventDefault();
+            setShowShortcutsModal(true);
+            break;
+          case 't':
+            event.preventDefault();
+            setShowThemeSelector(true);
+            break;
+          case 'd':
+            event.preventDefault();
+            setShowCustomizeModal(true);
+            break;
+          case '1':
+            event.preventDefault();
+            setViewMode('list');
+            break;
+          case '2':
+            event.preventDefault();
+            setViewMode('kanban');
+            break;
+          case '3':
+            event.preventDefault();
+            setViewMode('calendar');
+            break;
+          case '4':
+            event.preventDefault();
+            setViewMode('timeline');
+            break;
+        }
+      }
+
+      // ESC key to close modals
+      if (event.key === 'Escape') {
+        setShowTaskForm(false);
+        setShowHardwareForm(false);
+        setShowCustomizeModal(false);
+        setShowThemeSelector(false);
+        setShowShortcutsModal(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -177,13 +283,52 @@ export default function Dashboard({ users }: DashboardProps) {
 
   // Performance optimized filtered data
   const filteredTasks = useMemo(() => {
-    if (!searchTerm) return tasks;
-    const search = searchTerm.toLowerCase();
-    return tasks.filter(task => 
-      task.title.toLowerCase().includes(search) ||
-      task.description.toLowerCase().includes(search)
-    );
-  }, [tasks, searchTerm]);
+    let filtered = tasks;
+
+    // Search filter
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter(task => 
+        task.title.toLowerCase().includes(search) ||
+        task.description.toLowerCase().includes(search)
+      );
+    }
+
+    // Quick filters
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+    const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+
+    if (quickFilters.showToday) {
+      filtered = filtered.filter(task => task.dueDate === todayStr);
+    }
+
+    if (quickFilters.showThisWeek) {
+      filtered = filtered.filter(task => {
+        if (!task.dueDate) return false;
+        const taskDate = new Date(task.dueDate);
+        return taskDate >= startOfWeek && taskDate <= endOfWeek;
+      });
+    }
+
+    if (quickFilters.showOverdue) {
+      filtered = filtered.filter(task => {
+        if (!task.dueDate || task.status === 'completed') return false;
+        return new Date(task.dueDate) < today;
+      });
+    }
+
+    if (quickFilters.showHighPriority) {
+      filtered = filtered.filter(task => task.priority === 'high');
+    }
+
+    if (quickFilters.showMyTasks && user) {
+      filtered = filtered.filter(task => task.assignedTo === user.id);
+    }
+
+    return filtered;
+  }, [tasks, searchTerm, quickFilters, user]);
 
   // Calendar helper functions
   const getCurrentMonth = () => {
@@ -1499,6 +1644,30 @@ export default function Dashboard({ users }: DashboardProps) {
               <div className="col-md-6 text-end">
 
                 <button
+                  onClick={() => setShowShortcutsModal(true)}
+                  className="btn btn-outline-info me-2"
+                  title="Kısayol Tuşları (Ctrl+K)"
+                >
+                  ⌨️
+                </button>
+
+                <button
+                  onClick={() => setShowThemeSelector(true)}
+                  className="btn btn-outline-primary me-2"
+                  title="Tema Seç (Ctrl+T)"
+                >
+                  🎨
+                </button>
+
+                <button
+                  onClick={() => setShowCustomizeModal(true)}
+                  className="btn btn-outline-secondary me-2"
+                  title="Dashboard'ı Özelleştir"
+                >
+                  <Settings size={18} />
+                </button>
+
+                <button
                   onClick={() => setShowTaskForm(true)}
                   className="btn gradient-btn text-white me-2"
                 >
@@ -1541,28 +1710,149 @@ export default function Dashboard({ users }: DashboardProps) {
         
         {/* Ana İçerik */}
         <main className="container py-4">
-          {/* Sade İstatistik */}
-          <div className="row mb-4">
-            <div className="col-12">
-              <div className="glass-card rounded-4 p-3">
-                <div className="d-flex align-items-center justify-content-center gap-4">
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="stat-icon-small stat-icon-dark">
-                      <FileText className="text-white" size={16} />
+          {/* Customizable Widgets */}
+          
+          {/* Quick Stats Widget */}
+          {enabledWidgets.quickStats && (
+            <div className="row mb-4">
+              <div className="col-12">
+                <div className="glass-card rounded-4 p-3">
+                  <div className="d-flex align-items-center justify-content-center gap-4">
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="stat-icon-small stat-icon-dark">
+                        <FileText className="text-white" size={16} />
+                      </div>
+                      <span className="fw-bold text-dark">{notes.length} Not</span>
                     </div>
-                    <span className="fw-bold text-dark">{notes.length} Not</span>
-                  </div>
-                  <div className="text-muted">•</div>
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="stat-icon-small stat-icon-blue">
-                      <UserIcon className="text-white" size={16} />
+                    <div className="text-muted">•</div>
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="stat-icon-small stat-icon-blue">
+                        <UserIcon className="text-white" size={16} />
+                      </div>
+                      <span className="fw-bold text-dark">{users.length} Kullanıcı</span>
                     </div>
-                    <span className="fw-bold text-dark">{users.length} Kullanıcı</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Task Summary Widget */}
+          {enabledWidgets.taskSummary && (
+            <div className="row mb-4">
+              <div className="col-12">
+                <div className="glass-card rounded-4 p-4">
+                  <h5 className="fw-bold mb-3 text-center text-dark">📊 Görev Özeti</h5>
+                  <div className="row text-center">
+                    <div className="col-md-4">
+                      <div className="p-3">
+                        <div className="h2 fw-bold text-warning">{filteredTasks.filter(t => t.status === 'todo').length}</div>
+                        <div className="text-muted">Bekleyen</div>
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="p-3">
+                        <div className="h2 fw-bold text-primary">{filteredTasks.filter(t => t.status === 'in-progress').length}</div>
+                        <div className="text-muted">Devam Eden</div>
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="p-3">
+                        <div className="h2 fw-bold text-success">{filteredTasks.filter(t => t.status === 'completed').length}</div>
+                        <div className="text-muted">Tamamlanan</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Team Performance Widget */}
+          {enabledWidgets.teamPerformance && (
+            <div className="row mb-4">
+              <div className="col-12">
+                <div className="glass-card rounded-4 p-4">
+                  <h5 className="fw-bold mb-3 text-dark">
+                    <Users className="me-2" size={20} />
+                    Takım Performansı
+                  </h5>
+                  <div className="row">
+                    {users.slice(0, 4).map(user => {
+                      const userTasks = tasks.filter(task => task.assignedTo === user.id);
+                      const completedTasks = userTasks.filter(task => task.status === 'completed').length;
+                      const totalTasks = userTasks.length;
+                      const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                      
+                      return (
+                        <div key={user.id} className="col-md-3 mb-3">
+                          <div className="text-center">
+                            <div className="avatar mx-auto mb-2" style={{
+                              width: '50px',
+                              height: '50px',
+                              background: 'linear-gradient(135deg, #1a202c 0%, #2d3748 100%)',
+                              borderRadius: '50%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'white',
+                              fontSize: '18px',
+                              fontWeight: 'bold'
+                            }}>
+                              {user.name.charAt(0)}
+                            </div>
+                            <h6 className="fw-bold mb-1">{user.name}</h6>
+                            <div className="text-muted small">{completedTasks}/{totalTasks} görev</div>
+                            <div className={`fw-bold ${percentage >= 80 ? 'text-success' : percentage >= 50 ? 'text-warning' : 'text-danger'}`}>
+                              %{percentage}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Chart View Widget */}
+          {enabledWidgets.chartView && (
+            <div className="row mb-4">
+              <div className="col-12">
+                <div className="glass-card rounded-4 p-4">
+                  <h5 className="fw-bold mb-3 text-dark">
+                    <TrendingUp className="me-2" size={20} />
+                    İstatistik Grafikleri
+                  </h5>
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="chart-placeholder text-center p-4" style={{
+                        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                        borderRadius: '10px',
+                        border: '2px dashed #cbd5e1'
+                      }}>
+                        <TrendingUp size={40} className="text-muted mb-2" />
+                        <div className="text-muted">Haftalık Görev Trendi</div>
+                        <div className="text-muted small">(Chart.js ile entegre edilecek)</div>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="chart-placeholder text-center p-4" style={{
+                        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                        borderRadius: '10px',
+                        border: '2px dashed #cbd5e1'
+                      }}>
+                        <BarChart3 size={40} className="text-muted mb-2" />
+                        <div className="text-muted">Departman Bazlı Analiz</div>
+                        <div className="text-muted small">(Chart.js ile entegre edilecek)</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Faydalı Linkler */}
           <div className="row mb-4">
@@ -1641,11 +1931,12 @@ export default function Dashboard({ users }: DashboardProps) {
             </div>
           </div>
           
-          {/* Arama Kutusu */}
+          {/* Arama ve Hızlı Filtreler */}
           <div className="row mb-4">
             <div className="col-12">
               <div className="glass-card rounded-4 p-4">
-                <div className="d-flex align-items-center gap-3">
+                {/* Arama Kutusu */}
+                <div className="d-flex align-items-center gap-3 mb-3">
                   <Search className="text-muted" size={20} />
                   <input
                     type="text"
@@ -1692,7 +1983,69 @@ export default function Dashboard({ users }: DashboardProps) {
                       </button>
                     </div>
                   )}
-                  {searchTerm && (
+                </div>
+
+                {/* Hızlı Filtreler */}
+                {activeTab === 'tasks' && (
+                  <div className="quick-filters-section">
+                    <div className="d-flex align-items-center gap-2 flex-wrap">
+                      <span className="text-muted small fw-bold">🔍 Hızlı Filtreler:</span>
+                      
+                      <button
+                        className={`btn btn-sm ${quickFilters.showToday ? 'btn-warning' : 'btn-outline-warning'}`}
+                        onClick={() => setQuickFilters(prev => ({...prev, showToday: !prev.showToday}))}
+                      >
+                        📅 Bugün
+                      </button>
+                      
+                      <button
+                        className={`btn btn-sm ${quickFilters.showThisWeek ? 'btn-info' : 'btn-outline-info'}`}
+                        onClick={() => setQuickFilters(prev => ({...prev, showThisWeek: !prev.showThisWeek}))}
+                      >
+                        📆 Bu Hafta
+                      </button>
+                      
+                      <button
+                        className={`btn btn-sm ${quickFilters.showOverdue ? 'btn-danger' : 'btn-outline-danger'}`}
+                        onClick={() => setQuickFilters(prev => ({...prev, showOverdue: !prev.showOverdue}))}
+                      >
+                        ⏰ Geciken
+                      </button>
+                      
+                      <button
+                        className={`btn btn-sm ${quickFilters.showHighPriority ? 'btn-success' : 'btn-outline-success'}`}
+                        onClick={() => setQuickFilters(prev => ({...prev, showHighPriority: !prev.showHighPriority}))}
+                      >
+                        ⭐ Yüksek Öncelik
+                      </button>
+                      
+                      <button
+                        className={`btn btn-sm ${quickFilters.showMyTasks ? 'btn-primary' : 'btn-outline-primary'}`}
+                        onClick={() => setQuickFilters(prev => ({...prev, showMyTasks: !prev.showMyTasks}))}
+                      >
+                        👤 Benim Görevlerim
+                      </button>
+
+                      {(quickFilters.showToday || quickFilters.showThisWeek || quickFilters.showOverdue || quickFilters.showHighPriority || quickFilters.showMyTasks) && (
+                        <button
+                          className="btn btn-sm btn-outline-secondary ms-2"
+                          onClick={() => setQuickFilters({
+                            showOverdue: false,
+                            showToday: false,
+                            showThisWeek: false,
+                            showHighPriority: false,
+                            showMyTasks: false
+                          })}
+                          title="Tüm filtreleri temizle"
+                        >
+                          ✕ Temizle
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {searchTerm && (
                     <button
                       className="btn btn-sm btn-outline-secondary"
                       onClick={() => setSearchTerm('')}
@@ -2281,6 +2634,307 @@ export default function Dashboard({ users }: DashboardProps) {
           )}
         </main>
 
+        {/* Keyboard Shortcuts Modal */}
+        {showShortcutsModal && (
+          <div className="modal-backdrop position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{zIndex: 1050}}>
+            <div className="modal-content p-0" style={{maxWidth: '600px', width: '90%'}}>
+              <div className="p-4">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h3 className="gradient-text fw-bold fs-4 mb-0">
+                    ⌨️ Kısayol Tuşları
+                  </h3>
+                  <button
+                    onClick={() => setShowShortcutsModal(false)}
+                    className="close-button-custom"
+                    title="Kapat"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="shortcuts-content">
+                  <div className="row">
+                    <div className="col-md-6">
+                      <h5 className="fw-bold mb-3">🚀 Genel İşlemler</h5>
+                      <div className="shortcut-item">
+                        <span className="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>N</kbd></span>
+                        <span className="shortcut-desc">Yeni Görev Ekle</span>
+                      </div>
+                      <div className="shortcut-item">
+                        <span className="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>D</kbd></span>
+                        <span className="shortcut-desc">Dashboard Özelleştir</span>
+                      </div>
+                      <div className="shortcut-item">
+                        <span className="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>T</kbd></span>
+                        <span className="shortcut-desc">Tema Seç</span>
+                      </div>
+                      <div className="shortcut-item">
+                        <span className="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>K</kbd></span>
+                        <span className="shortcut-desc">Kısayol Tuşları</span>
+                      </div>
+                      <div className="shortcut-item">
+                        <span className="shortcut-keys"><kbd>ESC</kbd></span>
+                        <span className="shortcut-desc">Modal Kapat</span>
+                      </div>
+                    </div>
+                    
+                    <div className="col-md-6">
+                      <h5 className="fw-bold mb-3">👁️ Görünüm Modları</h5>
+                      <div className="shortcut-item">
+                        <span className="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>1</kbd></span>
+                        <span className="shortcut-desc">Liste Görünümü</span>
+                      </div>
+                      <div className="shortcut-item">
+                        <span className="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>2</kbd></span>
+                        <span className="shortcut-desc">Kanban Görünümü</span>
+                      </div>
+                      <div className="shortcut-item">
+                        <span className="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>3</kbd></span>
+                        <span className="shortcut-desc">Takvim Görünümü</span>
+                      </div>
+                      <div className="shortcut-item">
+                        <span className="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>4</kbd></span>
+                        <span className="shortcut-desc">Zaman Çizelgesi</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="alert alert-info mt-4">
+                    <small>
+                      💡 <strong>İpucu:</strong> Kısayol tuşları form alanlarına odaklanmadığınız zamanlarda çalışır.
+                    </small>
+                  </div>
+
+                  <div className="d-flex justify-content-end mt-4">
+                    <button
+                      onClick={() => setShowShortcutsModal(false)}
+                      className="submit-button-custom btn btn-primary"
+                    >
+                      Tamam
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Theme Selector Modal */}
+        {showThemeSelector && (
+          <div className="modal-backdrop position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{zIndex: 1050}}>
+            <div className="modal-content p-0" style={{maxWidth: '500px', width: '90%'}}>
+              <div className="p-4">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h3 className="gradient-text fw-bold fs-4 mb-0">
+                    🎨 Tema Seç
+                  </h3>
+                  <button
+                    onClick={() => setShowThemeSelector(false)}
+                    className="close-button-custom"
+                    title="Kapat"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="theme-options">
+                  <div className="row g-3">
+                    <div className="col-6">
+                      <div 
+                        className={`theme-card ${currentTheme === 'default' ? 'active' : ''}`}
+                        onClick={() => setCurrentTheme('default')}
+                      >
+                        <div className="theme-preview default-theme">
+                          <div className="theme-header"></div>
+                          <div className="theme-content">
+                            <div className="theme-card-item"></div>
+                            <div className="theme-card-item"></div>
+                          </div>
+                        </div>
+                        <div className="theme-title mt-2">Varsayılan</div>
+                      </div>
+                    </div>
+
+                    <div className="col-6">
+                      <div 
+                        className={`theme-card ${currentTheme === 'modern' ? 'active' : ''}`}
+                        onClick={() => setCurrentTheme('modern')}
+                      >
+                        <div className="theme-preview modern-theme">
+                          <div className="theme-header"></div>
+                          <div className="theme-content">
+                            <div className="theme-card-item"></div>
+                            <div className="theme-card-item"></div>
+                          </div>
+                        </div>
+                        <div className="theme-title mt-2">Modern</div>
+                      </div>
+                    </div>
+
+                    <div className="col-6">
+                      <div 
+                        className={`theme-card ${currentTheme === 'elegant' ? 'active' : ''}`}
+                        onClick={() => setCurrentTheme('elegant')}
+                      >
+                        <div className="theme-preview elegant-theme">
+                          <div className="theme-header"></div>
+                          <div className="theme-content">
+                            <div className="theme-card-item"></div>
+                            <div className="theme-card-item"></div>
+                          </div>
+                        </div>
+                        <div className="theme-title mt-2">Elegant</div>
+                      </div>
+                    </div>
+
+                    <div className="col-6">
+                      <div 
+                        className={`theme-card ${currentTheme === 'vibrant' ? 'active' : ''}`}
+                        onClick={() => setCurrentTheme('vibrant')}
+                      >
+                        <div className="theme-preview vibrant-theme">
+                          <div className="theme-header"></div>
+                          <div className="theme-content">
+                            <div className="theme-card-item"></div>
+                            <div className="theme-card-item"></div>
+                          </div>
+                        </div>
+                        <div className="theme-title mt-2">Canlı</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="d-flex justify-content-end gap-2 mt-4">
+                    <button
+                      onClick={() => setShowThemeSelector(false)}
+                      className="btn btn-outline-secondary"
+                    >
+                      Vazgeç
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowThemeSelector(false);
+                        localStorage.setItem('appTheme', currentTheme);
+                        // Apply theme class to body
+                        document.body.className = document.body.className.replace(/theme-\w+/g, '');
+                        document.body.classList.add(`theme-${currentTheme}`);
+                      }}
+                      className="submit-button-custom btn btn-primary"
+                    >
+                      Temayı Uygula
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dashboard Customization Modal */}
+        {showCustomizeModal && (
+          <div className="modal-backdrop position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{zIndex: 1050}}>
+            <div className="modal-content p-0" style={{maxWidth: '600px', width: '90%'}}>
+              <div className="p-4">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h3 className="gradient-text fw-bold fs-4 mb-0">
+                    <Settings className="me-2" size={24} />
+                    Dashboard'ı Özelleştir
+                  </h3>
+                  <button
+                    onClick={() => setShowCustomizeModal(false)}
+                    className="close-button-custom"
+                    title="Kapat"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="customize-content">
+                  <h5 className="fw-bold mb-3 text-dark">Widget'ları Seç</h5>
+                  <p className="text-muted mb-4">Dashboard'ınızda görmek istediğiniz widget'ları seçin:</p>
+                  
+                  <div className="widget-options">
+                    <div className="form-check widget-option mb-3">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="quickStats"
+                        checked={enabledWidgets.quickStats}
+                        onChange={(e) => setEnabledWidgets(prev => ({...prev, quickStats: e.target.checked}))}
+                      />
+                      <label className="form-check-label fw-bold" htmlFor="quickStats">
+                        📊 Hızlı İstatistikler
+                      </label>
+                      <div className="text-muted small">Not sayısı ve kullanıcı bilgileri</div>
+                    </div>
+
+                    <div className="form-check widget-option mb-3">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="taskSummary"
+                        checked={enabledWidgets.taskSummary}
+                        onChange={(e) => setEnabledWidgets(prev => ({...prev, taskSummary: e.target.checked}))}
+                      />
+                      <label className="form-check-label fw-bold" htmlFor="taskSummary">
+                        📋 Görev Özeti
+                      </label>
+                      <div className="text-muted small">Bekleyen, devam eden ve tamamlanan görev sayıları</div>
+                    </div>
+
+                    <div className="form-check widget-option mb-3">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="teamPerformance"
+                        checked={enabledWidgets.teamPerformance}
+                        onChange={(e) => setEnabledWidgets(prev => ({...prev, teamPerformance: e.target.checked}))}
+                      />
+                      <label className="form-check-label fw-bold" htmlFor="teamPerformance">
+                        👥 Takım Performansı
+                      </label>
+                      <div className="text-muted small">Kullanıcı bazlı görev tamamlama oranları</div>
+                    </div>
+
+                    <div className="form-check widget-option mb-3">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="chartView"
+                        checked={enabledWidgets.chartView}
+                        onChange={(e) => setEnabledWidgets(prev => ({...prev, chartView: e.target.checked}))}
+                      />
+                      <label className="form-check-label fw-bold" htmlFor="chartView">
+                        📈 Grafik Görünümü
+                      </label>
+                      <div className="text-muted small">Trend grafikleri ve analitik görselleştirmeler</div>
+                    </div>
+                  </div>
+
+                  <div className="d-flex justify-content-end gap-2 mt-4">
+                    <button
+                      onClick={() => setShowCustomizeModal(false)}
+                      className="btn btn-outline-secondary"
+                    >
+                      Vazgeç
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowCustomizeModal(false);
+                        // Save preferences to localStorage
+                        localStorage.setItem('dashboardWidgets', JSON.stringify(enabledWidgets));
+                      }}
+                      className="submit-button-custom btn btn-primary"
+                    >
+                      Değişiklikleri Kaydet
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Görev Formu Modal */}
         {showTaskForm && (
           <div className="modal-backdrop position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{zIndex: 1050}}>
@@ -2518,8 +3172,7 @@ export default function Dashboard({ users }: DashboardProps) {
           </div>
         )}
 
-
-    </div>
+      </div>
     </>
   );
 }

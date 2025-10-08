@@ -296,3 +296,232 @@ th, td {
 .max-width-300 {
   max-width: 300px;
 }
+
+/* Dashboard Customization Styles */
+.customize-content {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.widget-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.widget-option {
+  padding: 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.widget-option:hover {
+  border-color: #007bff;
+  background: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,123,255,0.15);
+}
+
+.widget-option input[type="checkbox"] {
+  transform: scale(1.2);
+  margin-right: 0.75rem;
+}
+
+.widget-option input[type="checkbox"]:checked + label {
+  color: #007bff;
+}
+
+.close-button-custom {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-button-custom:hover {
+  background: #f8f9fa;
+  color: #dc3545;
+  transform: rotate(90deg);
+}
+
+.submit-button-custom {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+  border-radius: 25px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.submit-button-custom:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+}
+
+/* Keyboard Shortcuts Styles */
+.shortcuts-content {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.shortcut-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.shortcut-keys {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+}
+
+.shortcut-keys kbd {
+  background: #007bff;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin: 0 0.125rem;
+  font-size: 0.8rem;
+}
+
+.shortcut-desc {
+  color: #495057;
+  font-weight: 500;
+}
+
+/* Theme Selector Styles */
+.theme-options {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.theme-card {
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1rem;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.theme-card:hover {
+  border-color: #007bff;
+  transform: translateY(-4px);
+  box-shadow: 0 6px 15px rgba(0,123,255,0.15);
+}
+
+.theme-card.active {
+  border-color: #007bff;
+  background: linear-gradient(135deg, #f8f9ff, #fff);
+  box-shadow: 0 4px 12px rgba(0,123,255,0.2);
+}
+
+.theme-preview {
+  width: 100%;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-header {
+  height: 20px;
+  width: 100%;
+}
+
+.theme-content {
+  padding: 8px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.theme-card-item {
+  height: 12px;
+  border-radius: 4px;
+  width: 100%;
+}
+
+/* Default Theme */
+.default-theme {
+  background: linear-gradient(135deg, #f8f9fa, #fff);
+}
+.default-theme .theme-header {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+}
+.default-theme .theme-card-item {
+  background: linear-gradient(135deg, #e9ecef, #dee2e6);
+}
+
+/* Modern Theme */
+.modern-theme {
+  background: linear-gradient(135deg, #1a1a1a, #333);
+}
+.modern-theme .theme-header {
+  background: linear-gradient(135deg, #28a745, #20c997);
+}
+.modern-theme .theme-card-item {
+  background: linear-gradient(135deg, #495057, #6c757d);
+}
+
+/* Elegant Theme */
+.elegant-theme {
+  background: linear-gradient(135deg, #f8f6f0, #fff8f0);
+}
+.elegant-theme .theme-header {
+  background: linear-gradient(135deg, #6f42c1, #e83e8c);
+}
+.elegant-theme .theme-card-item {
+  background: linear-gradient(135deg, #f1ecf1, #e2d9f0);
+}
+
+/* Vibrant Theme */
+.vibrant-theme {
+  background: linear-gradient(135deg, #fff0f3, #ffe0f0);
+}
+.vibrant-theme .theme-header {
+  background: linear-gradient(135deg, #fd7e14, #dc3545);
+}
+.vibrant-theme .theme-card-item {
+  background: linear-gradient(135deg, #ffccd5, #ffc0cb);
+}
+
+.theme-title {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+/* Quick Filters Styles */
+.quick-filters-section {
+  border-top: 1px solid #e9ecef;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.quick-filters-section .btn-sm {
+  font-size: 0.85rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 500;
+}
