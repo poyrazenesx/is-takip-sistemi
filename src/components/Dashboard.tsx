@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User, Hardware } from '@/types';
-import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor, Eye, Settings, ChevronDown, Wrench, Calculator, Calendar, Database } from 'lucide-react';
+import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor, Eye, Calculator } from 'lucide-react';
 import Notes from '@/components/Notes';
 
 
@@ -48,8 +48,7 @@ export default function Dashboard({ users }: DashboardProps) {
   const [showBellDropdown, setShowBellDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   
-  // Tools Dropdown System
-  const [showToolsDropdown, setShowToolsDropdown] = useState(false);
+  // Tools Dropdown System - Artık kullanılmıyor (butonlar yan yana)
   
 
 
@@ -91,34 +90,7 @@ export default function Dashboard({ users }: DashboardProps) {
     };
   }, [showBellDropdown]);
 
-  // Tools dropdown dışına tıklandığında kapat
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const toolsButton = document.querySelector('.tools-dropdown-btn');
-      const toolsMenu = document.querySelector('.tools-dropdown-menu');
-      
-      if (toolsButton && !toolsButton.contains(event.target as Node) && 
-          toolsMenu && !toolsMenu.contains(event.target as Node)) {
-        setShowToolsDropdown(false);
-      }
-    };
-
-    if (showToolsDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      // ESC tuşu ile kapama
-      const handleEscape = (event: KeyboardEvent) => {
-        if (event.key === 'Escape') {
-          setShowToolsDropdown(false);
-        }
-      };
-      document.addEventListener('keydown', handleEscape);
-      
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-        document.removeEventListener('keydown', handleEscape);
-      };
-    }
-  }, [showToolsDropdown]);
+  // Tools artık yan yana butonlar olduğu için dropdown useEffect'i kaldırıldı
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -1151,276 +1123,139 @@ export default function Dashboard({ users }: DashboardProps) {
                 <p className="text-muted small mb-0">Hastane Bilgi İşlem Sistemi</p>
               </div>
               <div className="col-lg-2 col-md-2 col-sm-6 d-flex justify-content-center">
-                {/* Araçlar Dropdown */}
-                <div className="dropdown" style={{ position: 'relative', zIndex: 1050 }}>
+                {/* Hızlı Araçlar - Yan Yana Butonlar */}
+                <div className="d-flex gap-1 align-items-center">
                   <button
-                    className="btn btn-outline-secondary dropdown-toggle d-flex align-items-center tools-dropdown-btn"
-                    onClick={() => setShowToolsDropdown(!showToolsDropdown)}
-                    style={{
-                      borderColor: '#48cab2',
-                      color: '#48cab2',
-                      fontWeight: '600',
-                      fontFamily: 'Alumni Sans, sans-serif',
-                      fontSize: '0.9rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
+                    onClick={() => {
+                      const newWindow = window.open('', '_blank', 'width=400,height=600');
+                      newWindow?.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                          <title>Hesap Makinesi</title>
+                          <style>
+                            body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+                            .calculator { max-width: 300px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+                            .display { width: 100%; height: 60px; font-size: 24px; text-align: right; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; }
+                            .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+                            .btn { height: 50px; font-size: 18px; border: none; border-radius: 5px; cursor: pointer; background: #48cab2; color: white; }
+                            .btn:hover { background: #3ba896; }
+                            .btn.operator { background: #ff6b6b; }
+                            .btn.operator:hover { background: #ff5252; }
+                          </style>
+                        </head>
+                        <body>
+                          <div class="calculator">
+                            <h2 style="text-align: center; color: #333;">💻 Hesap Makinesi</h2>
+                            <input type="text" class="display" id="display" readonly>
+                            <div class="buttons">
+                              <button class="btn" onclick="clearDisplay()">C</button>
+                              <button class="btn" onclick="deleteLast()">⌫</button>
+                              <button class="btn operator" onclick="addToDisplay('/')">/</button>
+                              <button class="btn operator" onclick="addToDisplay('*')">×</button>
+                              <button class="btn" onclick="addToDisplay('7')">7</button>
+                              <button class="btn" onclick="addToDisplay('8')">8</button>
+                              <button class="btn" onclick="addToDisplay('9')">9</button>
+                              <button class="btn operator" onclick="addToDisplay('-')">-</button>
+                              <button class="btn" onclick="addToDisplay('4')">4</button>
+                              <button class="btn" onclick="addToDisplay('5')">5</button>
+                              <button class="btn" onclick="addToDisplay('6')">6</button>
+                              <button class="btn operator" onclick="addToDisplay('+')">+</button>
+                              <button class="btn" onclick="addToDisplay('1')">1</button>
+                              <button class="btn" onclick="addToDisplay('2')">2</button>
+                              <button class="btn" onclick="addToDisplay('3')">3</button>
+                              <button class="btn operator" onclick="calculate()" rowspan="2">=</button>
+                              <button class="btn" onclick="addToDisplay('0')" style="grid-column: span 2;">0</button>
+                              <button class="btn" onclick="addToDisplay('.')">.</button>
+                            </div>
+                          </div>
+                          <script>
+                            function addToDisplay(value) {
+                              document.getElementById('display').value += value;
+                            }
+                            function clearDisplay() {
+                              document.getElementById('display').value = '';
+                            }
+                            function deleteLast() {
+                              const display = document.getElementById('display');
+                              display.value = display.value.slice(0, -1);
+                            }
+                            function calculate() {
+                              try {
+                                const result = eval(document.getElementById('display').value.replace(/×/g, '*'));
+                                document.getElementById('display').value = result;
+                              } catch(e) {
+                                alert('Hata: Geçersiz işlem');
+                              }
+                            }
+                          </script>
+                        </body>
+                        </html>
+                      `);
                     }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = '#48cab2';
-                      e.currentTarget.style.color = 'white';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = '#48cab2';
-                    }}
+                    className="btn btn-outline-info btn-sm"
+                    style={{ padding: '4px 8px' }}
+                    title="Hesap Makinesi"
                   >
-                    <Wrench className="me-2" size={16} />
-                    Araçlar
-                    <ChevronDown className="ms-1" size={14} />
+                    <Calculator size={16} />
                   </button>
-                  
-                  {showToolsDropdown && (
-                    <div 
-                      className="dropdown-menu show tools-dropdown-menu"
-                      style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: '-50px',
-                        zIndex: 99999,
-                        minWidth: '260px',
-                        backgroundColor: 'white',
-                        border: '1px solid rgba(0,0,0,0.1)',
-                        borderRadius: '12px',
-                        boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
-                        padding: '15px 0',
-                        marginTop: '8px'
-                      }}
-                    >
-                      <h6 className="dropdown-header" style={{ 
-                        fontFamily: 'Alumni Sans, sans-serif', 
-                        fontWeight: '700',
-                        textTransform: 'uppercase',
-                        fontSize: '0.75rem',
-                        letterSpacing: '1px',
-                        color: '#4a5568',
-                        padding: '8px 16px'
-                      }}>
-                        🛠️ Hızlı Araçlar
-                      </h6>
-                      
-                      <button 
-                        className="dropdown-item d-flex align-items-center"
-                        onClick={() => {
-                          setShowToolsDropdown(false);
-                          const newWindow = window.open('', '_blank', 'width=400,height=600');
-                          newWindow?.document.write(`
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                              <title>Hesap Makinesi</title>
-                              <style>
-                                body { font-family: Arial; padding: 20px; background: #f5f5f5; }
-                                .calculator { max-width: 300px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-                                .display { width: 100%; height: 60px; font-size: 24px; text-align: right; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; }
-                                .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-                                .btn { height: 50px; font-size: 18px; border: none; border-radius: 5px; cursor: pointer; background: #48cab2; color: white; }
-                                .btn:hover { background: #3ba896; }
-                                .btn.operator { background: #ff6b6b; }
-                                .btn.operator:hover { background: #ff5252; }
-                              </style>
-                            </head>
-                            <body>
-                              <div class="calculator">
-                                <h2 style="text-align: center; color: #333;">💻 Hesap Makinesi</h2>
-                                <input type="text" class="display" id="display" readonly>
-                                <div class="buttons">
-                                  <button class="btn" onclick="clearDisplay()">C</button>
-                                  <button class="btn" onclick="deleteLast()">⌫</button>
-                                  <button class="btn operator" onclick="addToDisplay('/')">/</button>
-                                  <button class="btn operator" onclick="addToDisplay('*')">×</button>
-                                  <button class="btn" onclick="addToDisplay('7')">7</button>
-                                  <button class="btn" onclick="addToDisplay('8')">8</button>
-                                  <button class="btn" onclick="addToDisplay('9')">9</button>
-                                  <button class="btn operator" onclick="addToDisplay('-')">-</button>
-                                  <button class="btn" onclick="addToDisplay('4')">4</button>
-                                  <button class="btn" onclick="addToDisplay('5')">5</button>
-                                  <button class="btn" onclick="addToDisplay('6')">6</button>
-                                  <button class="btn operator" onclick="addToDisplay('+')">+</button>
-                                  <button class="btn" onclick="addToDisplay('1')">1</button>
-                                  <button class="btn" onclick="addToDisplay('2')">2</button>
-                                  <button class="btn" onclick="addToDisplay('3')">3</button>
-                                  <button class="btn operator" onclick="calculate()" rowspan="2">=</button>
-                                  <button class="btn" onclick="addToDisplay('0')" style="grid-column: span 2;">0</button>
-                                  <button class="btn" onclick="addToDisplay('.')">.</button>
-                                </div>
-                              </div>
-                              <script>
-                                function addToDisplay(value) {
-                                  document.getElementById('display').value += value;
-                                }
-                                function clearDisplay() {
-                                  document.getElementById('display').value = '';
-                                }
-                                function deleteLast() {
-                                  const display = document.getElementById('display');
-                                  display.value = display.value.slice(0, -1);
-                                }
-                                function calculate() {
-                                  try {
-                                    const result = eval(document.getElementById('display').value.replace(/×/g, '*'));
-                                    document.getElementById('display').value = result;
-                                  } catch(e) {
-                                    alert('Hata: Geçersiz işlem');
-                                  }
-                                }
-                              </script>
-                            </body>
-                            </html>
-                          `);
-                        }}
-                        style={{
-                          padding: '10px 16px',
-                          border: 'none',
-                          backgroundColor: 'transparent',
-                          width: '100%',
-                          textAlign: 'left',
-                          fontFamily: 'Alumni Sans, sans-serif',
-                          fontSize: '0.85rem'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      >
-                        <Calculator className="me-2" size={18} color="#48cab2" />
-                        <div>
-                          <div style={{ fontWeight: '600' }}>Hesap Makinesi</div>
-                          <small style={{ color: '#6c757d' }}>Bilimsel hesaplama</small>
-                        </div>
-                      </button>
 
-                      <button 
-                        className="dropdown-item d-flex align-items-center"
-                        onClick={() => {
-                          setShowToolsDropdown(false);
-                          const note = prompt('📝 Hızlı Not:', '');
-                          if (note) {
-                            const timestamp = new Date().toLocaleString('tr-TR');
-                            localStorage.setItem('quickNote_' + Date.now(), JSON.stringify({
-                              content: note,
-                              timestamp: timestamp
-                            }));
-                            alert('✅ Notunuz kaydedildi! (' + timestamp + ')');
-                          }
-                        }}
-                        style={{
-                          padding: '10px 16px',
-                          border: 'none',
-                          backgroundColor: 'transparent',
-                          width: '100%',
-                          textAlign: 'left',
-                          fontFamily: 'Alumni Sans, sans-serif',
-                          fontSize: '0.85rem'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      >
-                        <FileText className="me-2" size={18} color="#48cab2" />
-                        <div>
-                          <div style={{ fontWeight: '600' }}>Hızlı Not</div>
-                          <small style={{ color: '#6c757d' }}>Anında not al</small>
-                        </div>
-                      </button>
+                  <button
+                    onClick={() => {
+                      const note = prompt('📝 Hızlı Not:', '');
+                      if (note) {
+                        const timestamp = new Date().toLocaleString('tr-TR');
+                        localStorage.setItem('quickNote_' + Date.now(), JSON.stringify({
+                          content: note,
+                          timestamp: timestamp
+                        }));
+                        alert('✅ Notunuz kaydedildi! (' + timestamp + ')');
+                      }
+                    }}
+                    className="btn btn-outline-success btn-sm"
+                    style={{ padding: '4px 8px' }}
+                    title="Hızlı Not"
+                  >
+                    <FileText size={16} />
+                  </button>
 
-                      <button 
-                        className="dropdown-item d-flex align-items-center"
-                        onClick={() => {
-                          setShowToolsDropdown(false);
-                          const color = '#' + Math.floor(Math.random()*16777215).toString(16);
-                          navigator.clipboard.writeText(color);
-                          alert('🎨 Rastgele renk kopyalandı: ' + color);
-                        }}
-                        style={{
-                          padding: '10px 16px',
-                          border: 'none',
-                          backgroundColor: 'transparent',
-                          width: '100%',
-                          textAlign: 'left',
-                          fontFamily: 'Alumni Sans, sans-serif',
-                          fontSize: '0.85rem'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      >
-                        <div className="me-2" style={{
-                          width: '18px', 
-                          height: '18px', 
-                          borderRadius: '50%',
-                          background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4)'
-                        }}></div>
-                        <div>
-                          <div style={{ fontWeight: '600' }}>Renk Üretici</div>
-                          <small style={{ color: '#6c757d' }}>Rastgele hex renk</small>
-                        </div>
-                      </button>
+                  <button
+                    onClick={() => {
+                      const color = '#' + Math.floor(Math.random()*16777215).toString(16);
+                      navigator.clipboard.writeText(color);
+                      alert('🎨 Rastgele renk kopyalandı: ' + color);
+                    }}
+                    className="btn btn-outline-warning btn-sm"
+                    style={{ padding: '4px 8px' }}
+                    title="Renk Üretici"
+                  >
+                    <div style={{
+                      width: '16px', 
+                      height: '16px', 
+                      borderRadius: '50%',
+                      background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4)'
+                    }}></div>
+                  </button>
 
-                      <button 
-                        className="dropdown-item d-flex align-items-center"
-                        onClick={() => {
-                          setShowToolsDropdown(false);
-                          const text = prompt('🔤 Metni dönüştür:', '');
-                          if (text) {
-                            const options = [
-                              '🔤 BÜYÜK HARF: ' + text.toUpperCase(),
-                              '🔡 küçük harf: ' + text.toLowerCase(),
-                              '🔠 Başlık Formatı: ' + text.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()),
-                              '🔄 tErS: ' + text.split('').map(c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase()).join('')
-                            ];
-                            alert(options.join('\n\n'));
-                          }
-                        }}
-                        style={{
-                          padding: '10px 16px',
-                          border: 'none',
-                          backgroundColor: 'transparent',
-                          width: '100%',
-                          textAlign: 'left',
-                          fontFamily: 'Alumni Sans, sans-serif',
-                          fontSize: '0.85rem'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      >
-                        <span className="me-2" style={{ fontSize: '18px' }}>🔤</span>
-                        <div>
-                          <div style={{ fontWeight: '600' }}>Metin Dönüştürücü</div>
-                          <small style={{ color: '#6c757d' }}>Büyük/küçük harf</small>
-                        </div>
-                      </button>
-
-                      <div className="dropdown-divider" style={{ margin: '8px 0', borderTop: '1px solid #e9ecef' }}></div>
-                      
-                      <button 
-                        className="dropdown-item d-flex align-items-center"
-                        onClick={() => {
-                          setShowToolsDropdown(false);
-                          alert('Sistem Ayarları - Yakında!');
-                        }}
-                        style={{
-                          padding: '8px 16px',
-                          border: 'none',
-                          backgroundColor: 'transparent',
-                          width: '100%',
-                          textAlign: 'left',
-                          fontFamily: 'Alumni Sans, sans-serif',
-                          fontSize: '0.85rem'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      >
-                        <Settings className="me-2" size={16} color="#6c757d" />
-                        Sistem Ayarları
-                      </button>
-                    </div>
-                  )}
+                  <button
+                    onClick={() => {
+                      const text = prompt('🔤 Metni dönüştür:', '');
+                      if (text) {
+                        const options = [
+                          '🔤 BÜYÜK HARF: ' + text.toUpperCase(),
+                          '🔡 küçük harf: ' + text.toLowerCase(),
+                          '🔠 Başlık Formatı: ' + text.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()),
+                          '🔄 tErS: ' + text.split('').map(c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase()).join('')
+                        ];
+                        alert(options.join('\n\n'));
+                      }
+                    }}
+                    className="btn btn-outline-primary btn-sm"
+                    style={{ padding: '4px 8px' }}
+                    title="Metin Dönüştürücü"
+                  >
+                    <span style={{ fontSize: '16px' }}>🔤</span>
+                  </button>
                 </div>
               </div>
               <div className="col-lg-5 col-md-4 col-sm-6 text-end">
