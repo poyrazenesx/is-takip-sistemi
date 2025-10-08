@@ -185,6 +185,60 @@ export default function Dashboard({ users }: DashboardProps) {
     );
   }, [tasks, searchTerm]);
 
+  // Calendar helper functions
+  const getCurrentMonth = () => {
+    const now = new Date();
+    return {
+      year: now.getFullYear(),
+      month: now.getMonth()
+    };
+  };
+
+  const getDaysInMonth = (year: number, month: number) => {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const firstDayOfWeek = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    
+    const days = [];
+    
+    // Previous month's trailing days
+    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+      const prevMonthDay = new Date(year, month, -i);
+      days.push({ date: prevMonthDay, isCurrentMonth: false });
+    }
+    
+    // Current month's days
+    for (let day = 1; day <= daysInMonth; day++) {
+      const currentDay = new Date(year, month, day);
+      days.push({ date: currentDay, isCurrentMonth: true });
+    }
+    
+    // Next month's leading days
+    const remainingSlots = 42 - days.length; // 6 rows * 7 days
+    for (let day = 1; day <= remainingSlots; day++) {
+      const nextMonthDay = new Date(year, month + 1, day);
+      days.push({ date: nextMonthDay, isCurrentMonth: false });
+    }
+    
+    return days;
+  };
+
+  const getTasksForDate = (date: Date) => {
+    return filteredTasks.filter(task => {
+      if (!task.dueDate) return false;
+      const taskDate = new Date(task.dueDate);
+      return taskDate.toDateString() === date.toDateString();
+    });
+  };
+
+  const { year, month } = getCurrentMonth();
+  const monthDays = getDaysInMonth(year, month);
+  const monthNames = [
+    'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+  ];
+
   const handleHardwareSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -1091,6 +1145,257 @@ export default function Dashboard({ users }: DashboardProps) {
           line-height: 1.3;
         }
 
+        /* Calendar View Styles */
+        .calendar-view {
+          padding: 20px;
+        }
+        
+        .calendar-grid {
+          background: white;
+          border-radius: 15px;
+          overflow: hidden;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calendar-weekdays {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        }
+        
+        .weekday-header {
+          padding: 15px 10px;
+          text-align: center;
+          font-weight: 600;
+          color: white;
+          font-size: 14px;
+        }
+        
+        .calendar-days {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 1px;
+          background: #e5e7eb;
+        }
+        
+        .calendar-day {
+          background: white;
+          min-height: 120px;
+          padding: 8px;
+          position: relative;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        
+        .calendar-day:hover {
+          background: #f8fafc;
+        }
+        
+        .calendar-day.other-month {
+          background: #f1f5f9;
+          color: #94a3b8;
+        }
+        
+        .calendar-day.today {
+          background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+        
+        .day-number {
+          font-weight: 600;
+          font-size: 14px;
+          margin-bottom: 4px;
+        }
+        
+        .today .day-number {
+          color: #1d4ed8;
+        }
+        
+        .day-tasks {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        
+        .task-item {
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+          border-radius: 4px;
+          padding: 4px 6px;
+          font-size: 10px;
+          cursor: pointer;
+          display: flex;
+          justify-content: between;
+          align-items: center;
+          border-left: 3px solid #3b82f6;
+        }
+        
+        .task-item.todo {
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          border-left-color: #f59e0b;
+        }
+        
+        .task-item.in-progress {
+          background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+          border-left-color: #3b82f6;
+        }
+        
+        .task-item.completed {
+          background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+          border-left-color: #10b981;
+        }
+        
+        .task-title {
+          flex: 1;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        .task-status {
+          margin-left: 4px;
+          font-size: 8px;
+        }
+        
+        .more-tasks {
+          font-size: 9px;
+          color: #6b7280;
+          text-align: center;
+          padding: 2px;
+        }
+        
+        .calendar-legend {
+          text-align: center;
+        }
+        
+        .legend-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 14px;
+        }
+        
+        .legend-dot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+        }
+        
+        .legend-dot.todo {
+          background: #f59e0b;
+        }
+        
+        .legend-dot.in-progress {
+          background: #3b82f6;
+        }
+        
+        .legend-dot.completed {
+          background: #10b981;
+        }
+
+        /* Timeline View Styles */
+        .timeline-view {
+          padding: 20px;
+        }
+        
+        .timeline-container {
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        
+        .timeline-section {
+          margin-bottom: 40px;
+        }
+        
+        .timeline-status-header {
+          background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+          color: white;
+          padding: 15px 25px;
+          border-radius: 10px;
+          margin-bottom: 20px;
+        }
+        
+        .timeline-tasks {
+          position: relative;
+          padding-left: 30px;
+        }
+        
+        .timeline-tasks::before {
+          content: '';
+          position: absolute;
+          left: 15px;
+          top: 0;
+          bottom: 0;
+          width: 2px;
+          background: linear-gradient(to bottom, #e5e7eb, #d1d5db);
+        }
+        
+        .timeline-task {
+          position: relative;
+          background: white;
+          border-radius: 10px;
+          padding: 20px;
+          margin-bottom: 20px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          margin-left: 20px;
+        }
+        
+        .timeline-marker {
+          position: absolute;
+          left: -35px;
+          top: 20px;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #e5e7eb;
+          border: 3px solid white;
+          box-shadow: 0 0 0 3px #e5e7eb;
+        }
+        
+        .timeline-task.todo .timeline-marker {
+          background: #f59e0b;
+          box-shadow: 0 0 0 3px #fbbf24;
+        }
+        
+        .timeline-task.in-progress .timeline-marker {
+          background: #3b82f6;
+          box-shadow: 0 0 0 3px #60a5fa;
+        }
+        
+        .timeline-task.completed .timeline-marker {
+          background: #10b981;
+          box-shadow: 0 0 0 3px #34d399;
+        }
+        
+        .timeline-content .task-header {
+          display: flex;
+          justify-content: between;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+        
+        .timeline-content .priority-badge {
+          font-size: 12px;
+          padding: 4px 8px;
+          border-radius: 12px;
+          background: #f3f4f6;
+          color: #374151;
+          font-weight: 600;
+        }
+        
+        .task-meta {
+          display: flex;
+          gap: 15px;
+          flex-wrap: wrap;
+          font-size: 12px;
+          color: #6b7280;
+          margin-bottom: 10px;
+        }
+        
+        .task-meta span {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
         @media (max-width: 768px) {
           .useful-link-card {
             margin-bottom: 1rem;
@@ -1619,6 +1924,161 @@ export default function Dashboard({ users }: DashboardProps) {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            ) : viewMode === 'calendar' ? (
+              /* Calendar View */
+              <div className="calendar-view">
+                <div className="calendar-header text-center mb-4">
+                  <h3 className="fw-bold text-dark mb-2">
+                    📅 {monthNames[month]} {year}
+                  </h3>
+                  <p className="text-muted">Görevlerinizi takvim görünümünde planlayın</p>
+                </div>
+                
+                <div className="calendar-grid">
+                  {/* Week Days Header */}
+                  <div className="calendar-weekdays">
+                    <div className="weekday-header">Paz</div>
+                    <div className="weekday-header">Pzt</div>
+                    <div className="weekday-header">Sal</div>
+                    <div className="weekday-header">Çar</div>
+                    <div className="weekday-header">Per</div>
+                    <div className="weekday-header">Cum</div>
+                    <div className="weekday-header">Cmt</div>
+                  </div>
+                  
+                  {/* Calendar Days */}
+                  <div className="calendar-days">
+                    {monthDays.map((day, index) => {
+                      const dayTasks = getTasksForDate(day.date);
+                      const isToday = day.date.toDateString() === new Date().toDateString();
+                      
+                      return (
+                        <div
+                          key={index}
+                          className={`calendar-day ${!day.isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`}
+                        >
+                          <div className="day-number">
+                            {day.date.getDate()}
+                          </div>
+                          
+                          <div className="day-tasks">
+                            {dayTasks.slice(0, 3).map(task => (
+                              <div
+                                key={task.id}
+                                className={`task-item ${task.status}`}
+                                title={`${task.title} - ${task.description}`}
+                                onClick={() => handleEditTask(task)}
+                              >
+                                <span className="task-title">{task.title}</span>
+                                <span className={`task-status ${task.status}`}>
+                                  {task.status === 'todo' ? '⏳' : task.status === 'in-progress' ? '🔄' : '✅'}
+                                </span>
+                              </div>
+                            ))}
+                            
+                            {dayTasks.length > 3 && (
+                              <div className="more-tasks">
+                                +{dayTasks.length - 3} daha
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                <div className="calendar-legend mt-4">
+                  <div className="d-flex justify-content-center gap-4">
+                    <div className="legend-item">
+                      <span className="legend-dot todo"></span>
+                      <span>Yapılacak</span>
+                    </div>
+                    <div className="legend-item">
+                      <span className="legend-dot in-progress"></span>
+                      <span>Devam Eden</span>
+                    </div>
+                    <div className="legend-item">
+                      <span className="legend-dot completed"></span>
+                      <span>Tamamlanan</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : viewMode === 'timeline' ? (
+              /* Timeline View */
+              <div className="timeline-view">
+                <div className="timeline-header text-center mb-4">
+                  <h3 className="fw-bold text-dark mb-2">
+                    📊 Proje Zaman Çizelgesi
+                  </h3>
+                  <p className="text-muted">Görevlerinizin kronolojik akışını görün</p>
+                </div>
+                
+                <div className="timeline-container">
+                  {['todo', 'in-progress', 'completed'].map(status => {
+                    const statusTasks = filteredTasks.filter(task => task.status === status);
+                    const statusTitle = status === 'todo' ? 'Yapılacak' : status === 'in-progress' ? 'Devam Eden' : 'Tamamlanan';
+                    const statusIcon = status === 'todo' ? '⏳' : status === 'in-progress' ? '🔄' : '✅';
+                    
+                    return (
+                      <div key={status} className="timeline-section">
+                        <div className="timeline-status-header">
+                          <h4 className="fw-bold">
+                            {statusIcon} {statusTitle} ({statusTasks.length})
+                          </h4>
+                        </div>
+                        
+                        <div className="timeline-tasks">
+                          {statusTasks.map((task, index) => (
+                            <div key={task.id} className={`timeline-task ${status}`}>
+                              <div className="timeline-marker"></div>
+                              <div className="timeline-content">
+                                <div className="task-header">
+                                  <h6 className="fw-bold mb-1">{task.title}</h6>
+                                  <span className={`priority-badge ${task.priority || 'medium'}`}>
+                                    {task.priority === 'high' ? '🔴 Yüksek' : task.priority === 'low' ? '🟢 Düşük' : '🟡 Orta'}
+                                  </span>
+                                </div>
+                                <p className="text-muted mb-2">{task.description}</p>
+                                <div className="task-meta">
+                                  <span className="assignee">
+                                    👤 {getUserName(task.assignedTo)}
+                                  </span>
+                                  <span className="created-date">
+                                    📅 {new Date(task.createdAt).toLocaleDateString('tr-TR')}
+                                  </span>
+                                  {task.dueDate && (
+                                    <span className="due-date">
+                                      ⏰ {new Date(task.dueDate).toLocaleDateString('tr-TR')}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="timeline-actions mt-2">
+                                  <button
+                                    onClick={() => handleEditTask(task)}
+                                    className="btn btn-sm btn-outline-primary me-2"
+                                  >
+                                    <Eye size={14} className="me-1" />
+                                    Düzenle
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteTask(task.id)}
+                                    className="btn btn-sm btn-outline-danger"
+                                  >
+                                    <X size={14} className="me-1" />
+                                    Sil
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ) : (

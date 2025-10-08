@@ -55,6 +55,7 @@ export interface Task {
   createdAt: Date;
   updatedAt: Date;
   priority: 'low' | 'medium' | 'high';
+  dueDate?: string; // ISO date string for calendar view
   attachments?: Attachment[];
 }
 
