@@ -19,29 +19,29 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
 
   // Özel günler ve resmi tatiller
   const specialDays: SpecialDay[] = [
-    // 2025 Resmi Tatiller
-    { date: '2025-01-01', title: 'Yılbaşı', type: 'holiday', icon: '🎉' },
-    { date: '2025-04-23', title: 'Ulusal Egemenlik ve Çocuk Bayramı', type: 'national', icon: '🇹🇷' },
-    { date: '2025-05-01', title: 'Emek ve Dayanışma Günü', type: 'holiday', icon: '🛠️' },
-    { date: '2025-05-19', title: 'Atatürk\'ü Anma Gençlik ve Spor Bayramı', type: 'national', icon: '🇹🇷' },
-    { date: '2025-08-30', title: 'Zafer Bayramı', type: 'national', icon: '🇹🇷' },
-    { date: '2025-10-29', title: 'Cumhuriyet Bayramı', type: 'national', icon: '🇹🇷' },
+    // 2025 Resmi Tatiller (Doğru Tarihler)
+    { date: '2025-01-01', title: 'Yılbaşı', type: 'holiday', icon: '★' },
+    { date: '2025-04-23', title: 'Ulusal Egemenlik ve Çocuk Bayramı', type: 'national', icon: '●' },
+    { date: '2025-05-01', title: 'Emek ve Dayanışma Günü', type: 'holiday', icon: '★' },
+    { date: '2025-05-19', title: 'Atatürk\'ü Anma Gençlik ve Spor Bayramı', type: 'national', icon: '●' },
+    { date: '2025-08-30', title: 'Zafer Bayramı', type: 'national', icon: '●' },
+    { date: '2025-10-29', title: 'Cumhuriyet Bayramı', type: 'national', icon: '●' },
     
-    // Dini Bayramlar (Tahmini - her yıl değişir)
-    { date: '2025-03-30', title: 'Ramazan Bayramı 1. Gün', type: 'holiday', icon: '🌙' },
-    { date: '2025-03-31', title: 'Ramazan Bayramı 2. Gün', type: 'holiday', icon: '🌙' },
-    { date: '2025-04-01', title: 'Ramazan Bayramı 3. Gün', type: 'holiday', icon: '🌙' },
-    { date: '2025-06-06', title: 'Kurban Bayramı 1. Gün', type: 'holiday', icon: '🐑' },
-    { date: '2025-06-07', title: 'Kurban Bayramı 2. Gün', type: 'holiday', icon: '🐑' },
-    { date: '2025-06-08', title: 'Kurban Bayramı 3. Gün', type: 'holiday', icon: '🐑' },
-    { date: '2025-06-09', title: 'Kurban Bayramı 4. Gün', type: 'holiday', icon: '🐑' },
+    // 2025 Dini Bayramlar (Doğru Tarihler)
+    { date: '2025-03-30', title: 'Ramazan Bayramı 1. Gün', type: 'holiday', icon: '◐' },
+    { date: '2025-03-31', title: 'Ramazan Bayramı 2. Gün', type: 'holiday', icon: '◐' },
+    { date: '2025-04-01', title: 'Ramazan Bayramı 3. Gün', type: 'holiday', icon: '◐' },
+    { date: '2025-06-06', title: 'Kurban Bayramı 1. Gün', type: 'holiday', icon: '◑' },
+    { date: '2025-06-07', title: 'Kurban Bayramı 2. Gün', type: 'holiday', icon: '◑' },
+    { date: '2025-06-08', title: 'Kurban Bayramı 3. Gün', type: 'holiday', icon: '◑' },
+    { date: '2025-06-09', title: 'Kurban Bayramı 4. Gün', type: 'holiday', icon: '◑' },
     
     // Özel Günler
-    { date: '2025-02-14', title: 'Sevgililer Günü', type: 'event', icon: '❤️' },
-    { date: '2025-03-08', title: 'Kadınlar Günü', type: 'event', icon: '👩' },
-    { date: '2025-10-24', title: 'Öğretmenler Günü', type: 'event', icon: '👨‍🏫' },
-    { date: '2025-11-10', title: 'Atatürk\'ü Anma Günü', type: 'national', icon: '🇹🇷' },
-    { date: '2025-12-31', title: 'Yılbaşı Arifesi', type: 'event', icon: '🎊' },
+    { date: '2025-02-14', title: 'Sevgililer Günü', type: 'event', icon: '♥' },
+    { date: '2025-03-08', title: 'Kadınlar Günü', type: 'event', icon: '♀' },
+    { date: '2025-10-24', title: 'Öğretmenler Günü', type: 'event', icon: '♦' },
+    { date: '2025-11-10', title: 'Atatürk\'ü Anma Günü', type: 'national', icon: '●' },
+    { date: '2025-12-31', title: 'Yılbaşı Arifesi', type: 'event', icon: '★' },
   ];
 
   // Ayları ve günleri Türkçe isimleri
@@ -157,24 +157,25 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
       <style jsx>{`
         .calendar-widget {
           background: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(20px);
+          backdrop-filter: blur(10px);
           border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 12px;
-          padding: 12px;
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          padding: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
           font-family: 'Alumni Sans', sans-serif;
-          max-width: 300px;
+          max-width: 240px;
+          width: 100%;
         }
 
         .calendar-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 10px;
+          margin-bottom: 6px;
         }
 
         .calendar-title {
-          font-size: 1rem;
+          font-size: 0.8rem;
           font-weight: 700;
           color: #1a202c;
           margin: 0;
@@ -188,9 +189,9 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
         .nav-button {
           background: rgba(26, 32, 44, 0.1);
           border: none;
-          border-radius: 6px;
-          width: 28px;
-          height: 28px;
+          border-radius: 4px;
+          width: 22px;
+          height: 22px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -208,9 +209,9 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
           background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
           color: white;
           border: none;
-          border-radius: 6px;
-          padding: 4px 8px;
-          font-size: 0.7rem;
+          border-radius: 4px;
+          padding: 2px 6px;
+          font-size: 0.6rem;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s ease;
@@ -224,17 +225,17 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
         .calendar-grid {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
-          gap: 2px;
+          gap: 1px;
         }
 
         .weekday {
           text-align: center;
-          padding: 4px 2px;
-          font-size: 0.65rem;
+          padding: 2px 1px;
+          font-size: 0.55rem;
           font-weight: 600;
           color: #718096;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.3px;
         }
 
         .calendar-day {
@@ -243,13 +244,13 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          border-radius: 4px;
+          border-radius: 3px;
           cursor: pointer;
           position: relative;
           transition: all 0.2s ease;
-          font-size: 0.7rem;
+          font-size: 0.6rem;
           font-weight: 500;
-          min-height: 28px;
+          min-height: 22px;
         }
 
         .calendar-day:hover {
@@ -290,13 +291,13 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
         }
 
         .day-number {
-          font-size: 0.7rem;
+          font-size: 0.6rem;
           font-weight: 600;
         }
 
         .day-icon {
-          font-size: 0.5rem;
-          margin-top: 1px;
+          font-size: 0.4rem;
+          margin-top: 0px;
         }
 
         .special-days-list {
@@ -339,31 +340,35 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
 
         @media (max-width: 768px) {
           .calendar-widget {
-            padding: 8px;
-            max-width: 250px;
+            padding: 6px;
+            max-width: 200px;
           }
           
           .calendar-title {
-            font-size: 0.85rem;
+            font-size: 0.7rem;
           }
           
           .calendar-day {
-            min-height: 24px;
-            font-size: 0.6rem;
+            min-height: 18px;
+            font-size: 0.5rem;
+          }
+          
+          .day-number {
+            font-size: 0.5rem;
           }
           
           .day-icon {
-            font-size: 0.4rem;
+            font-size: 0.35rem;
           }
           
           .nav-button {
-            width: 24px;
-            height: 24px;
+            width: 18px;
+            height: 18px;
           }
           
           .today-button {
-            padding: 2px 6px;
-            font-size: 0.6rem;
+            padding: 1px 4px;
+            font-size: 0.5rem;
           }
         }
       `}</style>
@@ -379,7 +384,7 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
             onClick={() => navigateMonth('prev')}
             title="Önceki Ay"
           >
-            <ChevronLeft size={12} />
+            <ChevronLeft size={10} />
           </button>
           <button 
             className="today-button"
@@ -393,7 +398,7 @@ const Calendar: React.FC<CalendarProps> = ({ className = '' }) => {
             onClick={() => navigateMonth('next')}
             title="Sonraki Ay"
           >
-            <ChevronRight size={12} />
+            <ChevronRight size={10} />
           </button>
         </div>
       </div>

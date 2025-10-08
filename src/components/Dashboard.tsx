@@ -1112,17 +1112,17 @@ export default function Dashboard({ users }: DashboardProps) {
         <header className="header-card">
           <div className="container">
             <div className="row align-items-center py-4">
-              <div className="col-lg-6 col-md-8">
+              <div className="col-lg-6 col-md-7 col-sm-12">
                 <h1 className="gradient-text fw-bold fs-2 mb-2">İş Takip Sistemi</h1>
                 <h5 className="text-muted mb-0">
                   Hoş geldin, <span className="fw-bold text-welcome">{user?.name}</span> 👋
                 </h5>
                 <p className="text-muted small mb-0">Hastane Bilgi İşlem Sistemi</p>
               </div>
-              <div className="col-lg-3 col-md-4 d-flex justify-content-center">
+              <div className="col-lg-3 col-md-2 col-sm-6 d-flex justify-content-center align-items-center">
                 <Calendar />
               </div>
-              <div className="col-lg-3 col-md-12 text-end">
+              <div className="col-lg-3 col-md-3 col-sm-6 text-end">
 
                 <button
                   onClick={() => setShowTaskForm(true)}
