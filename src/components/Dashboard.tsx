@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, User, Hardware } from '@/types';
-import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, FileText, Bell, X, Monitor, Eye, Calculator } from 'lucide-react';
+import { Plus, LogOut, Edit, Trash2, CheckCircle, Clock, AlertCircle, User as UserIcon, Search, Bell, X, Monitor, Eye, Calculator } from 'lucide-react';
 import Notes from '@/components/Notes';
 
 
@@ -1124,7 +1124,7 @@ export default function Dashboard({ users }: DashboardProps) {
               </div>
               <div className="col-lg-2 col-md-2 col-sm-6 d-flex justify-content-center">
                 {/* Hızlı Araçlar - Yan Yana Butonlar */}
-                <div className="d-flex gap-1 align-items-center">
+                <div className="d-flex gap-2 align-items-center">
                   <button
                     onClick={() => {
                       const newWindow = window.open('', '_blank', 'width=400,height=600');
@@ -1193,68 +1193,31 @@ export default function Dashboard({ users }: DashboardProps) {
                         </html>
                       `);
                     }}
-                    className="btn btn-outline-info btn-sm"
-                    style={{ padding: '4px 8px' }}
+                    className="btn btn-outline-info"
+                    style={{ padding: '6px 10px' }}
                     title="Hesap Makinesi"
                   >
-                    <Calculator size={16} />
+                    <Calculator size={20} />
                   </button>
 
                   <button
                     onClick={() => {
-                      const note = prompt('📝 Hızlı Not:', '');
-                      if (note) {
-                        const timestamp = new Date().toLocaleString('tr-TR');
-                        localStorage.setItem('quickNote_' + Date.now(), JSON.stringify({
-                          content: note,
-                          timestamp: timestamp
-                        }));
-                        alert('✅ Notunuz kaydedildi! (' + timestamp + ')');
-                      }
-                    }}
-                    className="btn btn-outline-success btn-sm"
-                    style={{ padding: '4px 8px' }}
-                    title="Hızlı Not"
-                  >
-                    <FileText size={16} />
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const color = '#' + Math.floor(Math.random()*16777215).toString(16);
-                      navigator.clipboard.writeText(color);
-                      alert('🎨 Rastgele renk kopyalandı: ' + color);
-                    }}
-                    className="btn btn-outline-warning btn-sm"
-                    style={{ padding: '4px 8px' }}
-                    title="Renk Üretici"
-                  >
-                    <div style={{
-                      width: '16px', 
-                      height: '16px', 
-                      borderRadius: '50%',
-                      background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4)'
-                    }}></div>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const text = prompt('🔤 Metni dönüştür:', '');
+                      const text = prompt('📝 Metni büyük harfe çevir:', '');
                       if (text) {
-                        const options = [
-                          '🔤 BÜYÜK HARF: ' + text.toUpperCase(),
-                          '🔡 küçük harf: ' + text.toLowerCase(),
-                          '🔠 Başlık Formatı: ' + text.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()),
-                          '🔄 tErS: ' + text.split('').map(c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase()).join('')
-                        ];
-                        alert(options.join('\n\n'));
+                        const converted = text.toUpperCase();
+                        // Panoya kopyala
+                        navigator.clipboard.writeText(converted).then(() => {
+                          alert('✅ Metin büyük harfe çevrildi ve panoya kopyalandı!\n\nOrjinal: ' + text + '\nDönüştürülmüş: ' + converted);
+                        }).catch(() => {
+                          alert('✅ Metin büyük harfe çevrildi!\n\nOrjinal: ' + text + '\nDönüştürülmüş: ' + converted + '\n\n(Panoya kopyalanamadı, manuel kopyalayın)');
+                        });
                       }
                     }}
-                    className="btn btn-outline-primary btn-sm"
-                    style={{ padding: '4px 8px' }}
-                    title="Metin Dönüştürücü"
+                    className="btn btn-outline-primary"
+                    style={{ padding: '6px 10px' }}
+                    title="Büyük Harf Dönüştürücü"
                   >
-                    <span style={{ fontSize: '16px' }}>🔤</span>
+                    <span style={{ fontSize: '20px', fontWeight: 'bold' }}>Aa</span>
                   </button>
                 </div>
               </div>
